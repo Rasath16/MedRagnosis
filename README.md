@@ -1,0 +1,1 @@
+# Med-RAGnosis-A-Retrieval-Augmented-Generation-Platform-for-Streamlined-Medical-Diagnosis
