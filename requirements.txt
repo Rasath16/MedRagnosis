@@ -1,0 +1,17 @@
+fastapi 
+uvicorn 
+pymongo 
+python-multipart 
+pypdf 
+langchain 
+langchain-community
+langchain-core
+langchain-groq 
+pinecone 
+langchain-google-genai
+python-dotenv
+passlib[bcrypt]
+streamlit
+requests
+PyPDF2
+tqdm
