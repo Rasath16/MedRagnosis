@@ -158,5 +158,5 @@ This project is licensed under the **MIT License**.
 ## 📬 Contact
 
   * **Author**: Tharusha Rasath
-  * **Email**: tharusharasatml@gmail.com](mailto:tharusharasatml@gmail.com)
+  * **Email**: tharusharasatml@gmail.com]
 
