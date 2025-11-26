@@ -7,20 +7,20 @@ from tqdm.auto import tqdm
 from pinecone import Pinecone, ServerlessSpec
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain.embeddings import init_embeddings
 from ..config.db import reports_collection
 from typing import List
 from fastapi import UploadFile
 
 load_dotenv()
 
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_ENV = os.getenv("PINECONE_ENV", "us-east-1")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "medragnosis-index")
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "./uploaded_reports")
 
-os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # initialize pinecone
@@ -29,7 +29,7 @@ spec=ServerlessSpec(cloud="aws",region=PINECONE_ENV)
 existing_indexes=[i["name"] for i in pc.list_indexes()]
 
 if PINECONE_INDEX_NAME not in existing_indexes:
-    pc.create_index(name=PINECONE_INDEX_NAME,dimension=768,metric="dotproduct",spec=spec)
+    pc.create_index(name=PINECONE_INDEX_NAME,dimension=1536,metric="dotproduct",spec=spec)
     while not pc.describe_index(PINECONE_INDEX_NAME).status["ready"]:
         time.sleep(1)
 
@@ -41,7 +41,10 @@ async def load_vectorstore(uploaded_files:List[UploadFile],uploaded:str,doc_id:s
         Save files, chunk texts, embed texts, upsert in Pinecone and write metadata to Mongo
     """
 
-    embed_model=GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    # Use `init_embeddings` to select a provider-compatible model string
+    # (e.g. 'openai:text-embedding-3-small'). This defers provider import until
+    # runtime and keeps the integration predictable across environments.
+    embed_model = init_embeddings("openai:text-embedding-3-small")
 
     for file in uploaded_files:
         filename=Path(file.filename).name
