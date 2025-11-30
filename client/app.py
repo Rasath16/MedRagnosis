@@ -147,7 +147,7 @@ else:
 
 # Main Page Application
 
-st.title("👨‍⚕️ GenAI-Powered Medical Diagnosis")
+st.title("👨‍⚕️ MedRagnosis -> GenAI-Powered Medical Diagnosis")
 st.markdown("This application uses a FastAPI backend with a LangChain/GenAI stack to help patients get a diagnosis from their reports and allow doctors to access their patients' diagnosis history.")
 
 if not st.session_state.logged_in:
