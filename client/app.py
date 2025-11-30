@@ -62,7 +62,7 @@ st.markdown("""
     }
     
     .diagnosis-result {
-        background: #f8f9fa;
+        background: navy blue;
         padding: 2rem;
         border-radius: 10px;
         border-left: 5px solid #43a047;
