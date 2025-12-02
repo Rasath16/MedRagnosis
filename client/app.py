@@ -27,7 +27,7 @@ st.markdown("""
         --primary-color: #1e88e5;
         --secondary-color: #43a047;
         --background-color: #f5f7fa;
-        --card-background: #ffffff;
+        --card-background: navy blue;
     }
     
     /* Hide Streamlit branding */
