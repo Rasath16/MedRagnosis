@@ -27,7 +27,7 @@ st.markdown("""
         --primary-color: #1e88e5;
         --secondary-color: #43a047;
         --background-color: #f5f7fa;
-        --card-background: navy blue;
+        --card-background: #ffffff;
     }
     
     /* Hide Streamlit branding */
@@ -112,7 +112,7 @@ st.markdown("""
     
     /* Record card */
     .record-card {
-        background: white;
+        background: navy blue;
         padding: 1.5rem;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
