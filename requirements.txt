@@ -18,3 +18,4 @@ tqdm
 pdf2image
 pytesseract
 pillow
+langchain-text-splitters

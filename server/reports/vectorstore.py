@@ -7,7 +7,11 @@ from pinecone import Pinecone, ServerlessSpec
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.embeddings import init_embeddings
-from langchain.docstore.document import Document
+
+# --- FIX: Updated Import Path ---
+from langchain_core.documents import Document 
+# --------------------------------
+
 from ..config.db import reports_collection
 from typing import List
 from fastapi import UploadFile
@@ -45,23 +49,15 @@ def extract_text_with_ocr(pdf_path: str) -> List[Document]:
     docs = []
     
     for i, image in enumerate(images):
-        # Extract text from image
         page_content = pytesseract.image_to_string(image)
-        
-        # Create a Document object compatible with LangChain
         if page_content.strip():
             docs.append(Document(
                 page_content=page_content,
                 metadata={"page": i + 1, "source": Path(pdf_path).name}
             ))
-            
     return docs
 
 async def load_vectorstore(uploaded_files: List[UploadFile], uploaded: str, doc_id: str):
-    """
-    Save files, chunk texts, embed texts, upsert in Pinecone and write metadata to Mongo.
-    Includes fallback to OCR for scanned documents.
-    """
     embed_model = init_embeddings("openai:text-embedding-3-small")
 
     for file in uploaded_files:
@@ -71,7 +67,7 @@ async def load_vectorstore(uploaded_files: List[UploadFile], uploaded: str, doc_
         with open(save_path, "wb") as f:
             f.write(content)
 
-        # 1. Try standard text extraction first
+        # 1. Try standard text extraction
         try:
             loader = PyPDFLoader(str(save_path))
             documents = loader.load()
@@ -80,25 +76,20 @@ async def load_vectorstore(uploaded_files: List[UploadFile], uploaded: str, doc_
             documents = []
 
         # 2. Check if text extraction worked; if not, use OCR
-        # We check if the total text content is very short or empty
         total_text_length = sum(len(doc.page_content.strip()) for doc in documents)
         
-        if total_text_length < 50:  # Threshold: if less than 50 chars, assume it's an image/scan
-            print(f"Detected scanned PDF or empty content for {filename}. Switching to OCR...")
+        if total_text_length < 50:
+            print(f"Detected scanned PDF for {filename}. Switching to OCR...")
             try:
-                # Run OCR (this operation is blocking, so we wrap it if needed, 
-                # but for simplicity calling directly here)
                 documents = await asyncio.to_thread(extract_text_with_ocr, str(save_path))
             except Exception as e:
                 print(f"OCR failed for {filename}: {e}")
-                # You might want to raise an HTTPException here or just skip
                 continue
 
         if not documents:
-            print(f"No content extracted from {filename}")
             continue
 
-        # 3. Proceed with Chunking and Embedding
+        # 3. Chunk and Embed
         splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
         chunks = splitter.split_documents(documents)
 
