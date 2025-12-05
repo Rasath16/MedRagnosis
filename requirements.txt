@@ -15,3 +15,6 @@ streamlit
 requests
 PyPDF2
 tqdm
+pdf2image
+pytesseract
+pillow
