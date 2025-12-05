@@ -187,20 +187,21 @@ def upload_report(auth, files):
     except requests.exceptions.ConnectionError:
         return 503, {"detail": "Server is unavailable. Please try again later."}
 
-def get_diagnosis(auth, doc_id, question):
+def get_chat_response(auth, doc_id, messages):
     try:
-        data = {
-            'doc_id': doc_id,
-            'question': question
+        # Prepare the payload matching ChatRequest model
+        payload = {
+            "doc_id": doc_id,
+            "messages": messages
         }
         response = requests.post(
-            f"{API_URL}/diagnosis/from_report",
+            f"{API_URL}/diagnosis/chat",
             auth=auth,
-            data=data
+            json=payload # Using JSON now, not data
         )
         return response.status_code, response.json()
     except requests.exceptions.ConnectionError:
-        return 503, {"detail": "Server is unavailable. Please try again later."}
+        return 503, {"detail": "Server is unavailable."}
 
 def get_doctor_diagnosis(auth, patient_name):
     try:
@@ -348,55 +349,65 @@ else:
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col2:
-            st.markdown("### 🩺 Get Diagnosis")
+            st.markdown("### 💬 AI Chat Consultant")
             st.markdown('<div class="info-card">', unsafe_allow_html=True)
-            
+
+            # Check if a document is selected/uploaded
             if 'doc_id' in st.session_state:
-                with st.form("diagnosis_form"):
-                    st.markdown("Ask our AI for a diagnosis")
-                    diagnosis_doc_id = st.text_input(
-                        "📄 Document ID",
-                        value=st.session_state.doc_id,
-                        placeholder="Enter your document ID"
-                    )
-                    diagnosis_question = st.text_area(
-                        "❓ Your Question",
-                        value="Please provide a diagnosis based on my report.",
-                        height=100,
-                        placeholder="What would you like to know about your report?"
-                    )
-                    diagnosis_submitted = st.form_submit_button("🔍 Get Diagnosis", use_container_width=True)
-                    
-                    if diagnosis_submitted:
-                        with st.spinner("🤖 AI is analyzing your report..."):
-                            status_code, data = get_diagnosis(
-                                st.session_state.auth,
-                                diagnosis_doc_id,
-                                diagnosis_question
-                            )
-                            if status_code == 200:
-                                st.markdown("</div>", unsafe_allow_html=True)
-                                
-                                st.markdown("---")
-                                st.markdown("### 📋 Diagnosis Results")
-                                
-                                st.markdown(f"""
-                                    <div class="diagnosis-result">
-                                        <h4 style="color: #43a047; margin-top: 0;">📊 Analysis</h4>
-                                        <p>{data.get("diagnosis", "No diagnosis provided.")}</p>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                                
-                                if data.get("sources"):
-                                    with st.expander("📚 View Sources", expanded=False):
-                                        st.json(data.get("sources", []))
-                            else:
-                                st.error(f"❌ {data.get('detail', 'Diagnosis failed')}")
+
+                # Initialize Chat History for this session if not exists
+                if "messages" not in st.session_state:
+                    st.session_state.messages = []
+
+                # Display Chat History
+                container = st.container(height=400)
+                with container:
+                    if not st.session_state.messages:
+                        st.info("👋 Hello! I've analyzed your report. Ask me anything about it.")
+
+                    for message in st.session_state.messages:
+                        with st.chat_message(message["role"]):
+                            st.markdown(message["content"])
+
+                # Chat Input
+                if prompt := st.chat_input("Ask about your report..."):
+                    # 1. Add User Message to History
+                    st.session_state.messages.append({"role": "user", "content": prompt})
+                    with container:
+                        with st.chat_message("user"):
+                            st.markdown(prompt)
+
+                    # 2. Call API
+                    with container:
+                        with st.chat_message("assistant"):
+                            with st.spinner("Thinking..."):
+                                status, data = get_chat_response(
+                                    st.session_state.auth, 
+                                    st.session_state.doc_id, 
+                                    st.session_state.messages
+                                )
+
+                                if status == 200:
+                                    response_text = data.get("diagnosis", "No response")
+                                    sources = data.get("sources", [])
+
+                                    st.markdown(response_text)
+
+                                    # Show sources if available
+                                    if sources:
+                                        with st.expander("📚 Sources used"):
+                                            for source in sources:
+                                                st.caption(f"- {source}")
+
+                                    # Add Assistant Message to History
+                                    st.session_state.messages.append({"role": "assistant", "content": response_text})
+                                else:
+                                    error_msg = f"❌ Error: {data.get('detail', 'Unknown error')}"
+                                    st.error(error_msg)
             else:
-                st.info("📤 Please upload a report first to get a Document ID")
-            
-            if 'doc_id' not in st.session_state or not diagnosis_submitted:
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.info("Please upload a report in the left panel to start the chat.")
+
+            st.markdown('</div>', unsafe_allow_html=True)
 
     elif st.session_state.role == "doctor":
         st.markdown("## 👨‍⚕️ Doctor Dashboard")

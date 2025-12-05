@@ -3,8 +3,10 @@ import asyncio
 from dotenv import load_dotenv
 from pinecone import Pinecone
 from langchain_openai import OpenAIEmbeddings
-from langchain_core.prompts import PromptTemplate
 from langchain_groq import ChatGroq
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.output_parsers import StrOutputParser
 
 load_dotenv()
 
@@ -21,53 +23,98 @@ index = pc.Index(PINECONE_INDEX_NAME)
 embed_model = OpenAIEmbeddings(model="text-embedding-3-small")
 llm = ChatGroq(temperature=0, model_name="llama-3.3-70b-versatile", groq_api_key=GROQ_API_KEY)
 
-prompt = PromptTemplate.from_template(
-    """
-You are a medical assistant. Using only the provided context (portions of the user's report), produce:
-1) A concise probable diagnosis (1-2 lines)
-2) Key findings from the report (bullet points)
-3) Recommended next steps (tests/treatments) — label clearly as suggestions, not medical advice.
+# --- 1. Chain to Rephrase Follow-up Questions ---
+condense_q_system = """Given a chat history and the latest user question which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. Do NOT answer the question, just reformulate it if needed and otherwise return it as is."""
+
+condense_q_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", condense_q_system),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{question}"),
+    ]
+)
+condense_q_chain = condense_q_prompt | llm | StrOutputParser()
+
+# --- 2. Chain to Answer Questions using RAG ---
+qa_system = """You are a medical assistant AI called MedRagnosis. 
+Use the following pieces of retrieved context to answer the question.
+If you don't know the answer, just say that you don't know. 
+Keep the answer concise but professional.
 
 Context:
 {context}
+"""
 
-User question:
-{question}
-""")
+qa_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", qa_system),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{question}"),
+    ]
+)
+rag_chain = qa_prompt | llm
 
-rag_chain = prompt | llm
 
-async def diagnosis_report(user: str, doc_id: str, question: str):
-    # embed question
-    embedding = await asyncio.to_thread(embed_model.embed_query, question)
+async def chat_diagnosis_report(user: str, doc_id: str, messages: list):
+    """
+    Handles a full chat conversation.
+    1. Rephrases the latest question based on history.
+    2. Retrieves context using the rephrased question.
+    3. Generates an answer using the original question + history + context.
+    """
+    # Extract the latest question
+    latest_question = messages[-1].content
     
-    # --- FIX: Apply filter directly in Pinecone query ---
+    # Convert incoming messages to LangChain format for history
+    chat_history = []
+    for msg in messages[:-1]: # Exclude the last one as it is the current question
+        if msg.role == "user":
+            chat_history.append(HumanMessage(content=msg.content))
+        elif msg.role == "assistant":
+            chat_history.append(AIMessage(content=msg.content))
+
+    # 1. Condense Question (if there is history)
+    if chat_history:
+        standalone_question = await asyncio.to_thread(
+            condense_q_chain.invoke, 
+            {"chat_history": chat_history, "question": latest_question}
+        )
+        print(f"Rephrased Query: {standalone_question}")
+    else:
+        standalone_question = latest_question
+
+    # 2. Retrieve Context (Using standalone question)
+    embedding = await asyncio.to_thread(embed_model.embed_query, standalone_question)
+    
     results = await asyncio.to_thread(
         index.query,
         vector=embedding,
         top_k=5,
         include_metadata=True,
-        filter={"doc_id": doc_id}  # Only search chunks belonging to THIS document
+        filter={"doc_id": doc_id} 
     )
-    # ----------------------------------------------------
 
-    # Collect contexts
     contexts = []
     sources_set = set()
     for match in results.get("matches", []):
         md = match.get("metadata", {})
-        # We don't need the manual check anymore, but it's safe to keep or remove
         text_snippet = md.get("text") or ""
         contexts.append(text_snippet)
         sources_set.add(md.get("source"))
 
     if not contexts:
-        return {"diagnosis": "Unable to analyze report. No relevant text found.", "explanation": "No report content indexed for this doc_id"}
+        return {"diagnosis": "I couldn't find relevant information in the uploaded report.", "sources": []}
     
-    # limit context length
-    context_text = "\n\n".join(contexts[:5])
+    context_text = "\n\n".join(contexts)
 
-    # final call the rag chain
-    final = await asyncio.to_thread(rag_chain.invoke, {"context": context_text, "question": question})
+    # 3. Generate Answer
+    final = await asyncio.to_thread(
+        rag_chain.invoke,
+        {
+            "context": context_text,
+            "chat_history": chat_history,
+            "question": latest_question
+        }
+    )
 
     return {"diagnosis": final.content, "sources": list(sources_set)}

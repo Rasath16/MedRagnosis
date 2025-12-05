@@ -1,7 +1,6 @@
-from pydantic import BaseModel,Field
+from pydantic import BaseModel, Field
 from typing import Optional, List
 import time
-from datetime import datetime
 
 class UserOut(BaseModel):
     username: str
@@ -14,7 +13,6 @@ class ReportMeta(BaseModel):
     uploaded_at: float
     num_chunks: int
 
-
 class DiagnosisRecord(BaseModel):
     doc_id: str
     requester: str
@@ -22,3 +20,12 @@ class DiagnosisRecord(BaseModel):
     answer: str
     sources: Optional[List] = []
     timestamp: float = Field(default_factory=lambda: time.time())
+
+# --- NEW: Chat Models ---
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    doc_id: str
+    messages: List[ChatMessage]

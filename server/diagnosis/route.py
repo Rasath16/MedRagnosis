@@ -1,41 +1,51 @@
-from fastapi import APIRouter, Depends, Form, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException, Body
 from ..auth.route import authenticate
-from .query import diagnosis_report
+from .query import chat_diagnosis_report # Changed import
 from ..config.db import reports_collection, diagnosis_collection
+from ..models.db_models import ChatRequest # Import the new model
 import time
 
 router=APIRouter(prefix="/diagnosis",tags=["diagnosis"])
 
-@router.post("/from_report")
-async def diagnos(user=Depends(authenticate),doc_id:str=Form(...),question:str=Form(default="Please provide a diagnosis based on my report")):
-    report=reports_collection.find_one({"doc_id":doc_id})
+@router.post("/chat")
+async def chat_diagnose(
+    req: ChatRequest,
+    user=Depends(authenticate)
+):
+    """
+    Conversational Endpoint.
+    Expects JSON body: { "doc_id": "...", "messages": [{"role": "user", "content": "..."}] }
+    """
+    report = reports_collection.find_one({"doc_id": req.doc_id})
     if not report:
-        raise HTTPException(status_code=404,detail="Report not found")
+        raise HTTPException(status_code=404, detail="Report not found")
     
-    # patient can only access
     if user["role"] == "patient" and report["uploader"] != user["username"]:
-        raise HTTPException(status_code=406,detail="You cannot access another uiser's report")
+        raise HTTPException(status_code=406, detail="You cannot access another user's report")
     
-    # if user is a patient and want diagnosis from his own report
-    if user["role"]=="patient":
-        res=await diagnosis_report(user["username"],doc_id,question)
-        # persist the diagnosis report
+    if user["role"] == "patient":
+        # Call the new chat logic
+        res = await chat_diagnosis_report(user["username"], req.doc_id, req.messages)
+        
+        # Determine the latest question for logging
+        latest_q = req.messages[-1].content if req.messages else "Unknown"
+
+        # Persist this interaction
         diagnosis_collection.insert_one({
-            "doc_id": doc_id,
+            "doc_id": req.doc_id,
             "requester": user["username"],
-            "question": question,
+            "question": latest_q, 
             "answer": res.get("diagnosis"),
             "sources": res.get("sources", []),
-            "timestamp": time.time()
+            "timestamp": time.time(),
+            "type": "chat"
         })
         return res
     
-    # if the user is a doctor or other, then they can't ask for diagnosis
-    if user["role"] in ("doctor","admin"):
-        raise HTTPException(status_code=407,detail="Doctors cannot access for diagnosis with this endpoint")
+    if user["role"] in ("doctor", "admin"):
+        raise HTTPException(status_code=407, detail="Doctors cannot access for diagnosis with this endpoint")
     
-    raise HTTPException(status_code=408,detail="Unauthorized action")
-
+    raise HTTPException(status_code=408, detail="Unauthorized action")
 
 @router.get("/by_patient_name")
 async def get_patient_diagnosis(patient_name: str, user=Depends(authenticate)):
