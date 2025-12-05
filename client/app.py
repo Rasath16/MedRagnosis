@@ -343,6 +343,7 @@ else:
                                 </div>
                             """, unsafe_allow_html=True)
                             st.session_state.doc_id = data['doc_id']
+                            st.session_state.messages = []
                         else:
                             st.error(f"❌ {data.get('detail', 'Upload failed')}")
             
