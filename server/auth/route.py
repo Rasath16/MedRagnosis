@@ -7,7 +7,6 @@ from ..config.db import users_collection
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-# This tells FastAPI that the token is expected in the "Authorization: Bearer <token>" header
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -29,7 +28,6 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     if username is None or role is None:
         raise HTTPException(status_code=401, detail="Invalid token payload")
         
-    # Optional: Check if user still exists in DB (adds a DB call but is safer)
     user = users_collection.find_one({"username": username})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
@@ -49,8 +47,6 @@ def signup(req: SignupRequest):
     return {"message": "User created successfully"}
 
 class LoginRequest(SignupRequest):
-    # Using the same model since it has username/password/role 
-    # (though role is ignored during login)
     pass
 
 @router.post("/login")

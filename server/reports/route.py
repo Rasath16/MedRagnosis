@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
-# REMOVED: from ..auth.route import authenticate
-from ..auth.route import get_current_user # <--- Keep only this one
+from ..auth.route import get_current_user 
 from .vectorstore import load_vectorstore
 import uuid
 from typing import List

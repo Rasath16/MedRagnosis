@@ -7,16 +7,13 @@ from pinecone import Pinecone, ServerlessSpec
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.embeddings import init_embeddings
-
-# --- FIX: Updated Import Path ---
 from langchain_core.documents import Document 
-# --------------------------------
 
 from ..config.db import reports_collection
 from typing import List
 from fastapi import UploadFile
 
-# --- OCR Imports ---
+# OCR Imports 
 import pytesseract
 from pdf2image import convert_from_path
 

@@ -20,8 +20,10 @@ class DiagnosisRecord(BaseModel):
     answer: str
     sources: Optional[List] = []
     timestamp: float = Field(default_factory=lambda: time.time())
-
-# --- NEW: Chat Models ---
+    
+    verified_by: Optional[str] = None 
+    verification_status: str = "pending"  
+    doctor_note: Optional[str] = None
 class ChatMessage(BaseModel):
     role: str
     content: str

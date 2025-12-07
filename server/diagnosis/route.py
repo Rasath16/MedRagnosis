@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
-# REMOVED: from ..auth.route import authenticate
-from ..auth.route import get_current_user  # <--- Keep only this one
+from ..auth.route import get_current_user 
 from .query import chat_diagnosis_report
 from ..config.db import reports_collection, diagnosis_collection
 from ..models.db_models import ChatRequest
 import time
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/diagnosis", tags=["diagnosis"])
 
@@ -50,7 +50,6 @@ async def chat_diagnose(
 
 @router.get("/by_patient_name")
 async def get_patient_diagnosis(patient_name: str, user=Depends(get_current_user)):
-    # Only doctors can view a patient's diagnosis
     if user["role"] != "doctor":
         raise HTTPException(status_code=403, detail="Only doctors can access this endpoint")
         
@@ -61,7 +60,33 @@ async def get_patient_diagnosis(patient_name: str, user=Depends(get_current_user
     # Convert cursor to a list of dictionaries, excluding the internal _id field
     records_list = []
     for record in diagnosis_records:
-        record["_id"] = str(record["_id"]) # Convert ObjectId to string for JSON serialization
+        record["_id"] = str(record["_id"]) 
         records_list.append(record)
         
     return records_list
+
+class VerificationRequest(BaseModel):
+    record_id: str
+    status: str
+    note: str
+
+@router.post("/verify")
+def verify_diagnosis(req: VerificationRequest, user=Depends(get_current_user)):
+    if user["role"] != "doctor":
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
+    from bson.objectid import ObjectId
+    
+    result = diagnosis_collection.update_one(
+        {"_id": ObjectId(req.record_id)},
+        {"$set": {
+            "verified_by": user["username"],
+            "verification_status": req.status,
+            "doctor_note": req.note
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Record not found")
+        
+    return {"message": "Diagnosis updated successfully"}
