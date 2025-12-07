@@ -1,17 +1,16 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
-from ..auth.route import authenticate
+# REMOVED: from ..auth.route import authenticate
+from ..auth.route import get_current_user # <--- Keep only this one
 from .vectorstore import load_vectorstore
 import uuid
 from typing import List
 from ..config.db import reports_collection
-from ..auth.route import get_current_user
 
-
-router=APIRouter(prefix="/reports",tags=["reports"])
+router = APIRouter(prefix="/reports", tags=["reports"])
 
 @router.post("/upload")
 async def upload_reports(
-    user=Depends(get_current_user), # <--- CHANGED DEPENDENCY
+    user=Depends(get_current_user),
     files: List[UploadFile] = File(...)
 ):
     if user["role"] != "patient":

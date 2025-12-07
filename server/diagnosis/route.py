@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, Form, HTTPException, Body
-from ..auth.route import authenticate
-from .query import chat_diagnosis_report # Changed import
+from fastapi import APIRouter, Depends, HTTPException
+# REMOVED: from ..auth.route import authenticate
+from ..auth.route import get_current_user  # <--- Keep only this one
+from .query import chat_diagnosis_report
 from ..config.db import reports_collection, diagnosis_collection
-from ..models.db_models import ChatRequest # Import the new model
+from ..models.db_models import ChatRequest
 import time
-from ..auth.route import get_current_user
 
-router=APIRouter(prefix="/diagnosis",tags=["diagnosis"])
+router = APIRouter(prefix="/diagnosis", tags=["diagnosis"])
 
 @router.post("/chat")
 async def chat_diagnose(
