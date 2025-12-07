@@ -241,7 +241,7 @@ else:
         login_username = st.text_input("👤 Username", key="login_username", placeholder="Enter your username")
         login_password = st.text_input("🔑 Password", type="password", key="login_password", placeholder="Enter your password")
         
-        if st.button("🚀 Login", key="login_btn", use_container_width=True):
+        if st.button("🚀Login", key="login_btn", use_container_width=True):
             if login_username and login_password:
                 with st.spinner("🔄 Authenticating..."):
                     status_code, data = authenticate_user(login_username, login_password)
