@@ -38,7 +38,7 @@ st.markdown("""
     }
     
     .info-card {
-        background: white;
+        background: #000080;
         padding: 1.5rem;
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.07);
@@ -55,7 +55,7 @@ st.markdown("""
     }
     
     .record-card {
-        background: white;
+        background: #000080;
         padding: 1.5rem;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -72,8 +72,8 @@ st.markdown("""
         margin: 0.5rem 0;
     }
     
-    .badge-patient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-    .badge-doctor { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+    .badge-patient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#000080; }
+    .badge-doctor { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #000080; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -87,7 +87,7 @@ if "token" not in st.session_state:
 if "role" not in st.session_state:
     st.session_state.role = ""
 
-# API Functions
+# --- API Functions ---
 
 def signup_user(username, password, role):
     try:
@@ -129,7 +129,6 @@ def get_chat_response(token, doc_id, messages, mode="current"):
         
         # Decide endpoint based on mode
         if mode == "trends":
-            # Assuming you created this endpoint for longitudinal analysis
             endpoint = f"{API_URL}/diagnosis/longitudinal"
         else:
             endpoint = f"{API_URL}/diagnosis/chat"
@@ -173,8 +172,17 @@ def verify_record(token, record_id, status, note):
     except requests.exceptions.ConnectionError:
         return 503, {"detail": "Server is unavailable."}
 
+def get_patient_history(token):
+    """Fetches the logged-in patient's diagnosis history."""
+    try:
+        headers = {'Authorization': f'Bearer {token}'}
+        response = requests.get(f"{API_URL}/diagnosis/my_history", headers=headers)
+        return response.status_code, response.json()
+    except requests.exceptions.ConnectionError:
+        return 503, {"detail": "Server is unavailable."}
 
-# Sidebar & Auth Flow 
+
+# --- Sidebar & Auth Flow ---
 st.sidebar.markdown("### 🏥 MedRagnosis")
 st.sidebar.markdown("---")
 
@@ -228,97 +236,151 @@ else:
                 else:
                     st.error(data.get("detail", "Failed"))
 
-# Main Page
+# --- Main Page Layout ---
 st.markdown('<div class="custom-card"><h1 style="color: white; margin: 0;">🏥 MedRagnosis</h1><p style="margin: 0.5rem 0 0 0; opacity: 0.9;">AI-Powered Medical Intelligence</p></div>', unsafe_allow_html=True)
 
 if not st.session_state.logged_in:
     st.info("👈 Please login from the sidebar to access the platform.")
 else:
-    # PATIENT VIEW
+    # ------------------ PATIENT VIEW ------------------
     if st.session_state.role == "patient":
-        col1, col2 = st.columns([1, 1.5])
         
-        # LEFT: Upload
-        with col1:
-            st.markdown("### 📤 Upload Report")
-            st.markdown('<div class="info-card">', unsafe_allow_html=True)
-            with st.form("upload_form"):
-                uploaded_files = st.file_uploader("PDF/TXT Files", type=["pdf", "txt"], accept_multiple_files=True)
-                submitted = st.form_submit_button("Upload & Analyze", use_container_width=True)
-                
-                if submitted and uploaded_files:
-                    with st.spinner("Processing (OCR + Vectorizing)..."):
-                        code, data = upload_report(st.session_state.token, uploaded_files)
-                        if code == 200:
-                            st.session_state.doc_id = data['doc_id']
-                            # AUTO-CLEAR: Reset chat on new upload
-                            st.session_state.messages = [] 
-                            st.success(f"Uploaded! ID: {data['doc_id']}")
-                        else:
-                            st.error(data.get("detail", "Error"))
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        # RIGHT: Chat 
-        with col2:
-            # Header + Clear Button
-            h_col, b_col = st.columns([3, 1])
-            with h_col:
-                st.markdown("### 💬 AI Consultant")
-            with b_col:
-                if st.button("🗑️ Clear Chat", use_container_width=True):
-                    st.session_state.messages = []
-                    st.rerun()
+        # Tabs for different patient functions
+        tab_consult, tab_history = st.tabs(["💬 Consultation", "📜 My History & Status"])
+        
+        # --- TAB 1: Chat & Upload ---
+        with tab_consult:
+            col1, col2 = st.columns([1, 1.5])
             
-            st.markdown('<div class="info-card">', unsafe_allow_html=True)
-            
-            if 'doc_id' in st.session_state:
-                # Analysis Mode Toggle
-                mode = st.radio("Analysis Scope:", ["Current Report", "All Reports (Trends)"], horizontal=True)
-                api_mode = "trends" if mode == "All Reports (Trends)" else "current"
-
-                if "messages" not in st.session_state:
-                    st.session_state.messages = []
-
-                # Display History
-                chat_container = st.container(height=400)
-                with chat_container:
-                    if not st.session_state.messages:
-                        st.info(f"Ready to analyze {mode.lower()}. Ask me anything!")
-                    for msg in st.session_state.messages:
-                        with st.chat_message(msg["role"]):
-                            st.markdown(msg["content"])
-
-                # Chat Input
-                if prompt := st.chat_input("Type your medical question..."):
-                    st.session_state.messages.append({"role": "user", "content": prompt})
-                    with chat_container:
-                        with st.chat_message("user"):
-                            st.markdown(prompt)
+            # LEFT: Upload
+            with col1:
+                st.markdown("### 📤 Upload Report")
+                st.markdown('<div class="info-card">', unsafe_allow_html=True)
+                with st.form("upload_form"):
+                    uploaded_files = st.file_uploader("PDF/TXT Files", type=["pdf", "txt"], accept_multiple_files=True)
+                    submitted = st.form_submit_button("Upload & Analyze", use_container_width=True)
                     
-                    with chat_container:
-                        with st.chat_message("assistant"):
-                            with st.spinner("Thinking..."):
-                                code, data = get_chat_response(
-                                    st.session_state.token,
-                                    st.session_state.doc_id,
-                                    st.session_state.messages,
-                                    mode=api_mode
-                                )
-                                
-                                if code == 200:
-                                    ans = data.get("diagnosis", "No response")
-                                    st.markdown(ans)
-                                    if data.get("sources"):
-                                        with st.expander("Sources"):
-                                            st.json(data["sources"])
-                                    st.session_state.messages.append({"role": "assistant", "content": ans})
-                                else:
-                                    st.error(f"Error: {data.get('detail')}")
-            else:
-                st.info("Please upload a report to start.")
-            st.markdown('</div>', unsafe_allow_html=True)
+                    if submitted and uploaded_files:
+                        with st.spinner("Processing (OCR + Vectorizing)..."):
+                            code, data = upload_report(st.session_state.token, uploaded_files)
+                            if code == 200:
+                                st.session_state.doc_id = data['doc_id']
+                                # AUTO-CLEAR: Reset chat on new upload
+                                st.session_state.messages = [] 
+                                st.success(f"Uploaded! ID: {data['doc_id']}")
+                            else:
+                                st.error(data.get("detail", "Error"))
+                st.markdown('</div>', unsafe_allow_html=True)
 
-    # DOCTOR VIEW
+            # RIGHT: Chat 
+            with col2:
+                # Header + Clear Button
+                h_col, b_col = st.columns([3, 1])
+                with h_col:
+                    st.markdown("### 💬 AI Consultant")
+                with b_col:
+                    if st.button("🗑️ Clear Chat", use_container_width=True):
+                        st.session_state.messages = []
+                        st.rerun()
+                
+                st.markdown('<div class="info-card">', unsafe_allow_html=True)
+                
+                if 'doc_id' in st.session_state:
+                    # Analysis Mode Toggle
+                    mode = st.radio("Analysis Scope:", ["Current Report", "All Reports (Trends)"], horizontal=True)
+                    api_mode = "trends" if mode == "All Reports (Trends)" else "current"
+
+                    if "messages" not in st.session_state:
+                        st.session_state.messages = []
+
+                    # Display Chat History
+                    chat_container = st.container(height=400)
+                    with chat_container:
+                        if not st.session_state.messages:
+                            st.info(f"Ready to analyze {mode.lower()}. Ask me anything!")
+                        for msg in st.session_state.messages:
+                            with st.chat_message(msg["role"]):
+                                st.markdown(msg["content"])
+
+                    # Chat Input
+                    if prompt := st.chat_input("Type your medical question..."):
+                        st.session_state.messages.append({"role": "user", "content": prompt})
+                        with chat_container:
+                            with st.chat_message("user"):
+                                st.markdown(prompt)
+                        
+                        with chat_container:
+                            with st.chat_message("assistant"):
+                                with st.spinner("Thinking..."):
+                                    code, data = get_chat_response(
+                                        st.session_state.token,
+                                        st.session_state.doc_id,
+                                        st.session_state.messages,
+                                        mode=api_mode
+                                    )
+                                    
+                                    if code == 200:
+                                        ans = data.get("diagnosis", "No response")
+                                        st.markdown(ans)
+                                        if data.get("sources"):
+                                            with st.expander("Sources"):
+                                                st.json(data["sources"])
+                                        st.session_state.messages.append({"role": "assistant", "content": ans})
+                                        
+                                        # Optional: Hint that status is pending
+                                        st.caption("ℹ️ diagnosis saved to history (Pending Doctor Review)")
+                                    else:
+                                        st.error(f"Error: {data.get('detail')}")
+                else:
+                    st.info("Please upload a report to start.")
+                st.markdown('</div>', unsafe_allow_html=True)
+
+        # --- TAB 2: History & Status ---
+        with tab_history:
+            st.markdown("### 🩺 Diagnosis History & Doctor Reviews")
+            if st.button("🔄 Refresh Status", key="refresh_hist"):
+                st.rerun()
+                
+            with st.spinner("Fetching history..."):
+                code, history = get_patient_history(st.session_state.token)
+            
+            if code == 200:
+                if not history:
+                    st.info("No diagnosis history found.")
+                else:
+                    for rec in history:
+                        # Determine Styling based on Status
+                        status = rec.get('verification_status', 'pending').lower()
+                        
+                        if status == 'verified':
+                            color = "#27ae60" # Green
+                            icon = "✅"
+                            status_text = "VERIFIED BY DOCTOR"
+                        elif status == 'rejected':
+                            color = "#e74c3c" # Red
+                            icon = "❌"
+                            status_text = "REJECTED"
+                        else:
+                            color = "#f39c12" # Orange
+                            icon = "⏳"
+                            status_text = "PENDING REVIEW"
+
+                        # Render Card
+                        with st.expander(f"{icon} {datetime.datetime.fromtimestamp(rec['timestamp']).strftime('%Y-%m-%d %H:%M')} - {rec.get('question')[:50]}..."):
+                            st.markdown(f"**Q:** {rec.get('question')}")
+                            st.markdown(f"**AI Answer:** {rec.get('answer')}")
+                            st.markdown("---")
+                            st.markdown(f"<h5 style='color:{color}'>{icon} Status: {status_text}</h5>", unsafe_allow_html=True)
+                            
+                            if rec.get('doctor_note'):
+                                st.info(f"👨‍⚕️ **Doctor's Note:** {rec['doctor_note']}")
+                            
+                            if rec.get('verified_by'):
+                                st.caption(f"Reviewed by: Dr. {rec['verified_by']}")
+            else:
+                st.error("Could not fetch history. Server might be down.")
+
+    # ------------------ DOCTOR VIEW ------------------
     elif st.session_state.role == "doctor":
         st.markdown("## 👨‍⚕️ Doctor Dashboard")
         
@@ -333,9 +395,14 @@ else:
                     if code == 200:
                         st.success(f"Found {len(data)} records")
                         for rec in data:
-                            with st.expander(f"{rec.get('question', 'No Q')} - {datetime.datetime.fromtimestamp(rec.get('timestamp', 0))}"):
+                            # Show verification status in doctor search as well
+                            status = rec.get("verification_status", "pending")
+                            icon = "✅" if status == "verified" else "⏳"
+                            
+                            with st.expander(f"{icon} {rec.get('question', 'No Q')[:40]}..."):
+                                st.write(f"**Question:** {rec.get('question')}")
                                 st.write(f"**AI Answer:** {rec.get('answer')}")
-                                st.caption(f"Status: {rec.get('verification_status', 'unverified')}")
+                                st.caption(f"Status: {status} | Date: {datetime.datetime.fromtimestamp(rec.get('timestamp', 0))}")
                     else:
                         st.error(data.get("detail", "Error"))
         
@@ -347,26 +414,31 @@ else:
             # Fetch pending records
             code, pending = get_pending_reviews(st.session_state.token)
             
-            if code == 200 and pending:
-                for rec in pending:
-                    with st.expander(f"Patient: {rec.get('requester')} | {rec.get('question')[:40]}..."):
-                        st.write(f"**Question:** {rec.get('question')}")
-                        st.info(f"**AI Diagnosis:** {rec.get('answer')}")
-                        
-                        note = st.text_input("Doctor Note", key=f"note_{rec['_id']}")
-                        
-                        c1, c2 = st.columns(2)
-                        if c1.button("✅ Approve", key=f"app_{rec['_id']}"):
-                            res_code, res_msg = verify_record(st.session_state.token, rec['_id'], "verified", note or "Approved")
-                            if res_code == 200: st.success("Verified!"); st.rerun()
+            if code == 200: 
+                if pending:
+                    for rec in pending:
+                        with st.expander(f"Patient: {rec.get('requester')} | {rec.get('question')[:40]}..."):
+                            st.write(f"**Question:** {rec.get('question')}")
+                            st.info(f"**AI Diagnosis:** {rec.get('answer')}")
                             
-                        if c2.button("❌ Reject", key=f"rej_{rec['_id']}"):
-                            res_code, res_msg = verify_record(st.session_state.token, rec['_id'], "rejected", note or "Rejected")
-                            if res_code == 200: st.warning("Rejected!"); st.rerun()
-            elif code == 200:
-                st.info("No pending reviews found.")
+                            note = st.text_input("Doctor Note", key=f"note_{rec['_id']}")
+                            
+                            c1, c2 = st.columns(2)
+                            if c1.button("✅ Approve", key=f"app_{rec['_id']}"):
+                                res_code, res_msg = verify_record(st.session_state.token, rec['_id'], "verified", note or "Approved")
+                                if res_code == 200: 
+                                    st.success("Verified!")
+                                    st.rerun()
+                                
+                            if c2.button("❌ Reject", key=f"rej_{rec['_id']}"):
+                                res_code, res_msg = verify_record(st.session_state.token, rec['_id'], "rejected", note or "Rejected")
+                                if res_code == 200: 
+                                    st.warning("Rejected!")
+                                    st.rerun()
+                else:
+                    st.info("No pending reviews found. All caught up! 🎉")
             else:
-                st.error("Failed to load pending reviews. (Did you implement the backend route?)")
+                st.error("Failed to load pending reviews.")
 
 # Footer
 st.markdown("---")
