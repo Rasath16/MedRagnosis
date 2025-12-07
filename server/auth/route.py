@@ -1,31 +1,75 @@
-from fastapi import APIRouter, HTTPException, Depends
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi.security import OAuth2PasswordBearer
 from .models import SignupRequest
 from .hash_utils import hash_password, verify_password
+from .jwt_handler import create_access_token, verify_token
 from ..config.db import users_collection
 
+router = APIRouter(prefix="/auth", tags=["auth"])
 
-router=APIRouter(prefix="/auth",tags=["auth"])
-security=HTTPBasic()
+# This tells FastAPI that the token is expected in the "Authorization: Bearer <token>" header
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-def authenticate(credentials:HTTPBasicCredentials=Depends(security)):
-    user=users_collection.find_one({"username":credentials.username})
-    if not user or not verify_password(credentials.password,user["password"]):
-        raise HTTPException(status_code=401,detail="Invalid credentials")
-    return {"username":user["username"],"role":user["role"]}
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    """
+    Dependency to validate the token and retrieve the current user.
+    Used by protected routes.
+    """
+    payload = verify_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    username = payload.get("sub")
+    role = payload.get("role")
+    
+    if username is None or role is None:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+        
+    # Optional: Check if user still exists in DB (adds a DB call but is safer)
+    user = users_collection.find_one({"username": username})
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+        
+    return {"username": username, "role": role}
 
 @router.post("/signup")
-def signup(req:SignupRequest):
-    if users_collection.find_one({"username":req.username}):
-        raise HTTPException(status_code=400,detail="user already exists")
+def signup(req: SignupRequest):
+    if users_collection.find_one({"username": req.username}):
+        raise HTTPException(status_code=400, detail="User already exists")
+    
     users_collection.insert_one({
-        "username":req.username,
-        "password":hash_password( req.password),
-        "role":req.role
+        "username": req.username,
+        "password": hash_password(req.password),
+        "role": req.role
     })
-    return {"message":"User created successfully"}
+    return {"message": "User created successfully"}
 
+class LoginRequest(SignupRequest):
+    # Using the same model since it has username/password/role 
+    # (though role is ignored during login)
+    pass
 
-@router.get("/login")
-def login(user=Depends(authenticate)):
-    return {"username":user["username"],"role":user["role"]}
+@router.post("/login")
+def login(req: LoginRequest):
+    """
+    Verifies credentials and returns a JWT access token.
+    """
+    user = users_collection.find_one({"username": req.username})
+    if not user or not verify_password(req.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Create Token
+    access_token = create_access_token(
+        data={"sub": user["username"], "role": user["role"]}
+    )
+    
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "username": user["username"],
+        "role": user["role"]
+    }

@@ -19,3 +19,4 @@ pdf2image
 pytesseract
 pillow
 langchain-text-splitters
+python-jose[cryptography]

@@ -147,10 +147,10 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = ""
+if "token" not in st.session_state: # <--- NEW
+    st.session_state.token = ""
 if "role" not in st.session_state:
     st.session_state.role = ""
-if "auth" not in st.session_state:
-    st.session_state.auth = None
 
 # API Functions
 def signup_user(username, password, role):
@@ -165,55 +165,52 @@ def signup_user(username, password, role):
 
 def authenticate_user(username, password):
     try:
-        response = requests.get(
+        response = requests.post(
             f"{API_URL}/auth/login",
-            auth=HTTPBasicAuth(username, password)
+            json={"username": username, "password": password, "role": "patient"} # role is dummy here
         )
         return response.status_code, response.json()
     except requests.exceptions.ConnectionError:
-        return 503, {"detail": "Server is unavailable. Please try again later."}
-
-def upload_report(auth, files):
+        return 503, {"detail": "Server is unavailable."}
+    
+def upload_report(token, files): # Changed auth -> token
     try:
-        headers = {'accept': 'application/json'}
+        headers = {'Authorization': f'Bearer {token}'} # <--- Bearer Header
         files_data = [('files', (file.name, file.getvalue(), file.type)) for file in files]
         response = requests.post(
             f"{API_URL}/reports/upload",
-            auth=auth,
-            files=files_data,
-            headers=headers
-        )
-        return response.status_code, response.json()
-    except requests.exceptions.ConnectionError:
-        return 503, {"detail": "Server is unavailable. Please try again later."}
-
-def get_chat_response(auth, doc_id, messages):
-    try:
-        # Prepare the payload matching ChatRequest model
-        payload = {
-            "doc_id": doc_id,
-            "messages": messages
-        }
-        response = requests.post(
-            f"{API_URL}/diagnosis/chat",
-            auth=auth,
-            json=payload # Using JSON now, not data
+            headers=headers,
+            files=files_data
         )
         return response.status_code, response.json()
     except requests.exceptions.ConnectionError:
         return 503, {"detail": "Server is unavailable."}
 
-def get_doctor_diagnosis(auth, patient_name):
+def get_chat_response(token, doc_id, messages): # Changed auth -> token
     try:
+        headers = {'Authorization': f'Bearer {token}'} # <--- Bearer Header
+        payload = {"doc_id": doc_id, "messages": messages}
+        response = requests.post(
+            f"{API_URL}/diagnosis/chat",
+            headers=headers,
+            json=payload
+        )
+        return response.status_code, response.json()
+    except requests.exceptions.ConnectionError:
+        return 503, {"detail": "Server is unavailable."}
+
+def get_doctor_diagnosis(token, patient_name): # Changed auth -> token
+    try:
+        headers = {'Authorization': f'Bearer {token}'} # <--- Bearer Header
         response = requests.get(
             f"{API_URL}/diagnosis/by_patient_name",
-            auth=auth,
+            headers=headers,
             params={'patient_name': patient_name}
         )
         return response.status_code, response.json()
     except requests.exceptions.ConnectionError:
-        return 503, {"detail": "Server is unavailable. Please try again later."}
-
+        return 503, {"detail": "Server is unavailable."}
+    
 # Sidebar and Authentication Flow
 st.sidebar.markdown("### 🏥 MedRagnosis")
 st.sidebar.markdown("---")
@@ -234,7 +231,7 @@ if st.session_state.logged_in:
         st.session_state.logged_in = False
         st.session_state.username = ""
         st.session_state.role = ""
-        st.session_state.auth = None
+        st.session_state.token = None
         st.rerun()
 else:
     tab1, tab2 = st.sidebar.tabs(["🔐 Login", "📝 Signup"])
@@ -248,11 +245,12 @@ else:
             if login_username and login_password:
                 with st.spinner("🔄 Authenticating..."):
                     status_code, data = authenticate_user(login_username, login_password)
+                    
                     if status_code == 200:
                         st.session_state.logged_in = True
-                        st.session_state.username = login_username
+                        st.session_state.username = data["username"]
                         st.session_state.role = data["role"]
-                        st.session_state.auth = HTTPBasicAuth(login_username, login_password)
+                        st.session_state.token = data["access_token"] # <--- Store Token
                         st.success("✅ Login successful!")
                         st.rerun()
                     else:
@@ -333,7 +331,7 @@ else:
                 
                 if upload_submitted and uploaded_files:
                     with st.spinner("⏳ Processing your reports..."):
-                        status_code, data = upload_report(st.session_state.auth, uploaded_files)
+                        status_code, data = upload_report(st.session_state.token, uploaded_files)
                         if status_code == 200:
                             st.markdown(f"""
                                 <div class="success-card">
@@ -383,7 +381,7 @@ else:
                         with st.chat_message("assistant"):
                             with st.spinner("Thinking..."):
                                 status, data = get_chat_response(
-                                    st.session_state.auth, 
+                                    st.session_state.token, 
                                     st.session_state.doc_id, 
                                     st.session_state.messages
                                 )
@@ -426,7 +424,7 @@ else:
             
             if view_submitted and patient_name_input:
                 with st.spinner(f"⏳ Fetching records for {patient_name_input}..."):
-                    status_code, data = get_doctor_diagnosis(st.session_state.auth, patient_name_input)
+                    status_code, data = get_doctor_diagnosis(st.session_state.tokem, patient_name_input)
                     if status_code == 200:
                         st.markdown("</div>", unsafe_allow_html=True)
                         

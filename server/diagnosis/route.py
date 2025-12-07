@@ -4,13 +4,14 @@ from .query import chat_diagnosis_report # Changed import
 from ..config.db import reports_collection, diagnosis_collection
 from ..models.db_models import ChatRequest # Import the new model
 import time
+from ..auth.route import get_current_user
 
 router=APIRouter(prefix="/diagnosis",tags=["diagnosis"])
 
 @router.post("/chat")
 async def chat_diagnose(
     req: ChatRequest,
-    user=Depends(authenticate)
+    user=Depends(get_current_user)
 ):
     """
     Conversational Endpoint.
@@ -48,7 +49,7 @@ async def chat_diagnose(
     raise HTTPException(status_code=408, detail="Unauthorized action")
 
 @router.get("/by_patient_name")
-async def get_patient_diagnosis(patient_name: str, user=Depends(authenticate)):
+async def get_patient_diagnosis(patient_name: str, user=Depends(get_current_user)):
     # Only doctors can view a patient's diagnosis
     if user["role"] != "doctor":
         raise HTTPException(status_code=403, detail="Only doctors can access this endpoint")
