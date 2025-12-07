@@ -1,10 +1,10 @@
 # 🏥 MedRagnosis – RAG-Enhanced Medical Diagnosis Platform
 
-**MedRagnosis** is an AI-powered medical diagnostic tool that uses a **Retrieval-Augmented Generation (RAG)** architecture to analyze patient medical reports. It provides preliminary diagnoses, key findings, and recommendations using the **Groq LLaMA 3.3** engine, accessible via a user-friendly Streamlit interface.
+**MedRagnosis** is an AI-powered medical diagnostic tool that uses a **Retrieval-Augmented Generation (RAG)** architecture to analyze patient medical reports. It provides preliminary diagnoses, key findings, and recommendations using the **Groq LLaMA 3.3** engine, accessible via a user-friendly Streamlit chat interface.
 
 > **🔴 Live Demo:** [https://medragnosis.streamlit.app/](https://medragnosis.streamlit.app/)
 >
-> **Status:** ✅ Backend (Deployed on Render) | ✅ Frontend (Deployed on Streamlit)
+> **Status:** ✅ Backend (Deployed on Render via Docker) | ✅ Frontend (Deployed on Streamlit)
 
 ---
 
@@ -12,9 +12,10 @@
 
 ### 👤 For Patients
 * **Secure Account Management:** Sign up and log in securely.
-* **Document Upload:** Upload medical reports (PDF/TXT) directly to the system.
-* **AI Diagnosis:** Receive instant analysis, potential diagnoses, and actionable advice based *strictly* on your uploaded report.
-* **Transparent Sources:** View the specific segments of your report the AI used to generate the answer.
+* **Advanced Document Upload (OCR):** Upload medical reports (PDF/TXT). Supports both digital text and **scanned image-based reports** using integrated OCR (Tesseract).
+* **Conversational AI Consultant:** Chat naturally with the AI about your report. Ask follow-up questions like "What does that result mean?" or "Is this serious?" maintaining full context.
+* **Smart Context:** The chat history automatically clears when you upload a new report, ensuring focused analysis.
+* **Transparent Sources:** View the specific segments of your report the AI used to generate each answer.
 
 ### 👨‍⚕️ For Doctors
 * **Patient Lookup:** Search for patient records by username.
@@ -28,7 +29,8 @@
 | :--- | :--- |
 | **Frontend** | Streamlit (Python) |
 | **Backend** | FastAPI (Python 3.13) |
-| **Deployment** | Render (Backend), Streamlit Cloud (Frontend) |
+| **Containerization** | Docker |
+| **OCR Engine** | Tesseract, Poppler, pdf2image |
 | **Database** | MongoDB (User data & Diagnosis history) |
 | **Vector DB** | Pinecone (Serverless) |
 | **LLM Inference** | Groq API (LLaMA 3.3-70b-versatile) |
@@ -42,16 +44,17 @@
 ```text
 MedRagnosis/
 ├── client/              # Streamlit Frontend Application
-│   ├── app.py           # Main UI Logic
+│   ├── app.py           # Main UI Logic (Chat Interface)
 │   └── requirements.txt # Frontend dependencies
 ├── server/              # FastAPI Backend Application
 │   ├── auth/            # Authentication Routes & Models
 │   ├── config/          # Database & Env Config
-│   ├── diagnosis/       # RAG Logic (Pinecone & Groq)
+│   ├── diagnosis/       # RAG Logic (Chat History & OCR)
 │   ├── models/          # Pydantic Data Models
 │   ├── reports/         # File Processing & Vector Ingestion
 │   └── main.py          # App Entry Point
 ├── uploaded_dir/        # Local storage for temp files
+├── Dockerfile           # Container configuration for Render
 ├── requirements.txt     # Backend dependencies
 └── README.md
 ````
@@ -62,14 +65,22 @@ MedRagnosis/
 
 Follow these steps to run the application locally.
 
-### 1\. Clone the Repository
+### 1\. Prerequisites (System Tools)
+
+Since the app uses OCR, you must install these tools on your machine:
+
+  * **Mac:** `brew install tesseract poppler`
+  * **Linux:** `sudo apt-get install tesseract-ocr poppler-utils`
+  * **Windows:** Download and install [Tesseract](https://www.google.com/search?q=https://github.com/UB-Mannheim/tesseract/wiki) and [Poppler](https://www.google.com/search?q=http://blog.alivate.com.au/poppler-windows/). Add them to your system PATH.
+
+### 2\. Clone the Repository
 
 ```bash
 git clone [https://github.com/yourusername/MedRagnosis.git](https://github.com/yourusername/MedRagnosis.git)
 cd MedRagnosis
 ```
 
-### 2\. Backend Setup (FastAPI)
+### 3\. Backend Setup (FastAPI)
 
 1.  **Create and activate a virtual environment:**
 
@@ -111,23 +122,21 @@ cd MedRagnosis
 
     *The Backend API will run at `http://127.0.0.1:8000`*
 
-### 3\. Frontend Setup (Streamlit)
+### 4\. Frontend Setup (Streamlit)
 
 1.  **Navigate to the client directory (optional, or run from root):**
-    *Ensure you have the client dependencies installed. If they differ from root, install them:*
+    *Ensure you have the client dependencies installed.*
 
     ```bash
     pip install -r client/requirements.txt
     ```
 
 2.  **Configure Client Environment:**
-    Create a `.env` file inside the `client/` folder (or ensure your main `.env` has this if running from root with modified paths):
+    Create a `.env` file inside the `client/` folder:
 
     ```ini
     API_URL=[http://127.0.0.1:8000](http://127.0.0.1:8000)
     ```
-
-    *(Note: For the live app, this points to the Render backend URL)*
 
 3.  **Run the Frontend:**
 
@@ -139,6 +148,21 @@ cd MedRagnosis
 
 -----
 
+## 🐳 Docker Deployment (Recommended)
+
+This project includes a `Dockerfile` to handle system dependencies (Tesseract/Poppler) automatically.
+
+1.  **Build the image:**
+    ```bash
+    docker build -t medragnosis-backend .
+    ```
+2.  **Run the container:**
+    ```bash
+    docker run -p 10000:10000 --env-file .env medragnosis-backend
+    ```
+
+-----
+
 ## 📡 API Endpoints
 
 | Method | Endpoint | Description |
@@ -147,9 +171,9 @@ cd MedRagnosis
 | `POST` | `/auth/signup` | Register a new user (`patient` or `doctor`). |
 | `GET` | `/auth/login` | Basic Auth login. |
 | **Reports** | | |
-| `POST` | `/reports/upload` | Upload PDF reports (Patient only). Returns `doc_id`. |
+| `POST` | `/reports/upload` | Upload PDF reports (Patient only). Supports OCR. |
 | **Diagnosis** | | |
-| `POST` | `/diagnosis/from_report` | Get AI diagnosis for a specific document. |
+| `POST` | `/diagnosis/chat` | **New:** Conversational endpoint. Accepts chat history and returns context-aware diagnosis. |
 | `GET` | `/diagnosis/by_patient_name` | View diagnosis history (Doctor only). |
 
 -----
@@ -157,10 +181,11 @@ cd MedRagnosis
 ## 🔮 Roadmap
 
   * [x] **Frontend Implementation:** Built with Streamlit.
-  * [x] **Deployment:** Live on Render & Streamlit Cloud.
+  * [x] **Deployment:** Live on Render (Docker) & Streamlit Cloud.
+  * [x] **OCR Support:** Handle scanned/image-based PDF reports.
+  * [x] **Chat Interface:** Enable follow-up questions on the diagnosis.
   * [ ] **JWT Implementation:** Upgrade from Basic Auth to stateless tokens.
   * [ ] **Multi-File Context:** Analyze multiple reports in a single query.
-  * [ ] **Chat Interface:** Enable follow-up questions on the diagnosis.
 
 -----
 
