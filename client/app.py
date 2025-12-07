@@ -38,7 +38,7 @@ st.markdown("""
     }
     
     .info-card {
-        background: #000080;
+        background: navy blue;
         padding: 1.5rem;
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.07);
@@ -55,7 +55,7 @@ st.markdown("""
     }
     
     .record-card {
-        background: #000080;
+        background: navy blue;
         padding: 1.5rem;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -72,8 +72,8 @@ st.markdown("""
         margin: 0.5rem 0;
     }
     
-    .badge-patient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#000080; }
-    .badge-doctor { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #000080; }
+    .badge-patient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:navy blue; }
+    .badge-doctor { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:= navy blue; }
 </style>
 """, unsafe_allow_html=True)
 
