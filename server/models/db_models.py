@@ -24,6 +24,7 @@ class DiagnosisRecord(BaseModel):
     verified_by: Optional[str] = None 
     verification_status: str = "pending"  
     doctor_note: Optional[str] = None
+
 class ChatMessage(BaseModel):
     role: str
     content: str
@@ -31,3 +32,9 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     doc_id: str
     messages: List[ChatMessage]
+
+# --- ADDED THIS CLASS ---
+class VerificationRequest(BaseModel):
+    record_id: str
+    status: str
+    note: str
