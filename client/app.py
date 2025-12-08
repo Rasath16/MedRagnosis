@@ -113,7 +113,7 @@ st.markdown("""
     
     /* Modern Cards */
     .modern-card {
-        background: white;
+        background: navy blue;
         padding: 2rem;
         border-radius: 16px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.08);
@@ -230,7 +230,7 @@ st.markdown("""
     .stTabs [data-baseweb="tab"] {
         border-radius: 10px;
         padding: 0.8rem 1.5rem;
-        background: white;
+        background: navy blue;
         border: 1px solid #e0e0e0;
         font-weight: 600;
     }
