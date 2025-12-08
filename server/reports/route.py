@@ -25,6 +25,7 @@ async def upload_reports(
     await load_vectorstore(files, uploaded=user["username"], doc_id=doc_id)
     return {"message": "Uploaded and indexed", "doc_id": doc_id}
 
+# --- NEW VIEW ENDPOINT ---
 @router.get("/view/{doc_id}")
 async def view_report(
     doc_id: str,
