@@ -837,39 +837,5 @@ else:
             
             st.markdown('</div>', unsafe_allow_html=True)
 
-# Enhanced Footer
-st.markdown("---")
-st.markdown("""
-    <div class="footer">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <div style="display: flex; justify-content: space-around; margin-bottom: 2rem; flex-wrap: wrap;">
-                <div style="padding: 1rem; min-width: 200px;">
-                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">🏥 MedRagnosis</h4>
-                    <p style="font-size: 0.9rem; color: #888;">AI-Powered Medical Intelligence Platform</p>
-                </div>
-                <div style="padding: 1rem; min-width: 200px;">
-                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">🔒 Security</h4>
-                    <p style="font-size: 0.9rem; color: #888;">HIPAA Compliant<br>End-to-End Encryption<br>Secure Data Storage</p>
-                </div>
-                <div style="padding: 1rem; min-width: 200px;">
-                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">⚡ Technology</h4>
-                    <p style="font-size: 0.9rem; color: #888;">Powered by GenAI<br>LangChain Integration<br>Advanced RAG System</p>
-                </div>
-                <div style="padding: 1rem; min-width: 200px;">
-                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">📞 Support</h4>
-                    <p style="font-size: 0.9rem; color: #888;">24/7 Available<br>support@medragnosis.ai<br>+1 (555) 123-4567</p>
-                </div>
-            </div>
-            
-            <div style="border-top: 1px solid #e0e0e0; padding-top: 1.5rem; margin-top: 1.5rem;">
-                <p style="font-size: 0.85rem; color: #999; margin: 0.3rem 0;">
-                    <strong>Disclaimer:</strong> MedRagnosis is an AI-assisted diagnostic tool. All diagnoses should be verified by licensed medical professionals.
-                </p>
-                <p style="font-size: 0.85rem; color: #999; margin: 1rem 0 0 0;">
-                    © 2024 MedRagnosis. All rights reserved. | Privacy Policy | Terms of Service | Medical Disclaimer
-                </p>
-            </div>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
+
                 
