@@ -1,4 +1,3 @@
-````markdown
 # 🏥 MedRagnosis – RAG-Enhanced Medical Diagnosis Platform
 
 **MedRagnosis** is an AI-powered medical diagnostic tool that uses a **Retrieval-Augmented Generation (RAG)** architecture to analyze patient medical reports. It bridges the gap between AI insights and professional medical oversight by combining a patient-facing chat interface with a doctor-facing verification dashboard.
@@ -66,6 +65,7 @@ MedRagnosis/
 ├── requirements.txt     # Backend dependencies
 └── README.md
 ```
+
 ````
 
 ---
@@ -217,3 +217,4 @@ This project is licensed under the **MIT License**.
 ```
 
 ```
+````
