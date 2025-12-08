@@ -113,7 +113,7 @@ st.markdown("""
     
     /* Modern Cards */
     .modern-card {
-        background: navy blue;
+        background: white;
         padding: 2rem;
         border-radius: 16px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.08);
@@ -230,7 +230,7 @@ st.markdown("""
     .stTabs [data-baseweb="tab"] {
         border-radius: 10px;
         padding: 0.8rem 1.5rem;
-        background: navy blue;
+        background: white;
         border: 1px solid #e0e0e0;
         font-weight: 600;
     }
@@ -429,6 +429,19 @@ def get_patient_history(token):
         return response.status_code, response.json()
     except requests.exceptions.ConnectionError:
         return 503, {"detail": "Server is unavailable."}
+
+def download_report_file(token, doc_id):
+    """
+    Downloads the report file from the backend.
+    """
+    try:
+        headers = {'Authorization': f'Bearer {token}'}
+        response = requests.get(f"{API_URL}/reports/view/{doc_id}", headers=headers)
+        if response.status_code == 200:
+            return response.content
+        return None
+    except requests.exceptions.ConnectionError:
+        return None
 
 
 # --- Enhanced Sidebar & Auth Flow ---
@@ -730,6 +743,23 @@ else:
                             with st.expander(f"{icon} {timestamp} - {rec.get('question', 'No Question')[:50]}..."):
                                 st.markdown(f"**❓ Patient Question:** {rec.get('question')}")
                                 st.markdown(f"**🤖 AI Diagnosis:** {rec.get('answer')}")
+                                
+                                # --- Added Report View ---
+                                doc_id = rec.get("doc_id")
+                                filename = rec.get("filename", "Unknown File")
+                                if doc_id and doc_id != "all-reports":
+                                    st.markdown(f"**📄 Source File:** {filename}")
+                                    file_bytes = download_report_file(st.session_state.token, doc_id)
+                                    if file_bytes:
+                                        st.download_button(
+                                            label=f"📥 Download {filename}",
+                                            data=file_bytes,
+                                            file_name=filename,
+                                            mime='application/pdf',
+                                            key=f"dl_search_{rec['_id']}"
+                                        )
+                                # -------------------------
+                                
                                 st.markdown("---")
                                 
                                 status_color = "#27ae60" if status == "verified" else "#e74c3c" if status == "rejected" else "#f39c12"
@@ -772,6 +802,34 @@ else:
                             
                             st.markdown("#### 🤖 AI-Generated Diagnosis")
                             st.markdown(f"> {rec.get('answer')}")
+
+                            # --- Added Report View ---
+                            st.markdown("---")
+                            st.markdown("#### 📄 Clinical Source")
+                            doc_id = rec.get("doc_id")
+                            filename = rec.get("filename", "Unknown File")
+                            
+                            if doc_id == "all-reports":
+                                st.warning("⚠️ This is a longitudinal analysis across multiple reports. Source verification is complex.")
+                            elif doc_id:
+                                col_info, col_dl = st.columns([3, 1])
+                                with col_info:
+                                    st.markdown(f"**Filename:** `{filename}`")
+                                with col_dl:
+                                    # Fetch file bytes on render
+                                    file_bytes = download_report_file(st.session_state.token, doc_id)
+                                    if file_bytes:
+                                        st.download_button(
+                                            label="📥 Download Report",
+                                            data=file_bytes,
+                                            file_name=filename,
+                                            mime='application/pdf',
+                                            key=f"dl_rev_{rec['_id']}",
+                                            use_container_width=True
+                                        )
+                                    else:
+                                        st.error("File unavailable")
+                            # -------------------------
                             
                             st.markdown("---")
                             st.markdown("#### ✍️ Your Professional Review")
@@ -836,6 +894,3 @@ else:
                 st.error("❌ Failed to load pending reviews. Please try again.")
             
             st.markdown('</div>', unsafe_allow_html=True)
-
-
-                
