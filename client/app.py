@@ -466,14 +466,7 @@ if st.session_state.logged_in:
     st.sidebar.markdown("---")
     
     # Quick Stats or Info
-    if st.session_state.role == "patient":
-        st.sidebar.markdown("### 📊 Quick Access")
-        st.sidebar.info("💡 **Tip:** Upload multiple reports to track health trends over time")
-    else:
-        st.sidebar.markdown("### 🩺 Doctor Tools")
-        st.sidebar.info("🔍 Review pending diagnoses and validate AI recommendations")
     
-    st.sidebar.markdown("---")
     
     if st.sidebar.button("🚪 Logout", use_container_width=True):
         st.session_state.logged_in = False
