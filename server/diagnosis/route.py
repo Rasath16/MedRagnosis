@@ -9,7 +9,6 @@ from bson.objectid import ObjectId
 
 router = APIRouter(prefix="/diagnosis", tags=["diagnosis"])
 
-# --- 1. Patient Chat Endpoint ---
 @router.post("/chat")
 async def chat_diagnose(
     req: ChatRequest,
@@ -41,7 +40,6 @@ async def chat_diagnose(
     
     raise HTTPException(status_code=403, detail="Unauthorized")
 
-# --- 2. Trends Analysis Endpoint ---
 @router.post("/longitudinal")
 async def longitudinal_diagnose(
     req: ChatRequest,
@@ -66,7 +64,6 @@ async def longitudinal_diagnose(
     
     return res
 
-# --- 3. Doctor: Get Pending Reviews (UPDATED) ---
 @router.get("/pending")
 def get_pending_reviews_endpoint(user=Depends(get_current_user)):
     if user["role"] != "doctor":
@@ -87,7 +84,6 @@ def get_pending_reviews_endpoint(user=Depends(get_current_user)):
         results.append(doc)
     return results
 
-# --- 4. Doctor: Verify Diagnosis ---
 @router.post("/verify")
 def verify_diagnosis(req: VerificationRequest, user=Depends(get_current_user)):
     if user["role"] != "doctor":
@@ -107,7 +103,6 @@ def verify_diagnosis(req: VerificationRequest, user=Depends(get_current_user)):
         
     return {"message": "Diagnosis updated successfully"}
 
-# --- 5. Patient: Get My History ---
 @router.get("/my_history")
 def get_my_history(user=Depends(get_current_user)):
     if user["role"] != "patient":
@@ -121,7 +116,6 @@ def get_my_history(user=Depends(get_current_user)):
         results.append(doc)
     return results
 
-# --- 6. Doctor: Search by Patient Name (UPDATED) ---
 @router.get("/by_patient_name")
 async def get_patient_diagnosis(patient_name: str, user=Depends(get_current_user)):
     if user["role"] != "doctor":

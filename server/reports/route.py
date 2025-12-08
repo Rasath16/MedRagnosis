@@ -25,7 +25,7 @@ async def upload_reports(
     await load_vectorstore(files, uploaded=user["username"], doc_id=doc_id)
     return {"message": "Uploaded and indexed", "doc_id": doc_id}
 
-# --- NEW VIEW ENDPOINT ---
+#NEW VIEW ENDPOINT
 @router.get("/view/{doc_id}")
 async def view_report(
     doc_id: str,
@@ -34,24 +34,21 @@ async def view_report(
     """
     Allows Doctors to download/view the original report for verification.
     """
-    # 1. Find report metadata
+
     report = reports_collection.find_one({"doc_id": doc_id})
     if not report:
         raise HTTPException(status_code=404, detail="Report metadata not found")
 
-    # 2. Access Control: Only Doctors or the Uploader can view
     if user["role"] != "doctor" and user["username"] != report["uploader"]:
         raise HTTPException(status_code=403, detail="Unauthorized to view this report")
 
-    # 3. Construct File Path
-    # Note: File naming convention must match vectorstore.py: {doc_id}_{filename}
+
     filename = report["filename"]
     file_path = Path(UPLOAD_DIR) / f"{doc_id}_{filename}"
 
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found on server")
 
-    # 4. Return File
     return FileResponse(
         path=file_path, 
         filename=filename, 

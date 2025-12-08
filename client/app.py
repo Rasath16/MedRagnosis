@@ -339,7 +339,7 @@ if "token" not in st.session_state:
 if "role" not in st.session_state:
     st.session_state.role = ""
 
-# --- API Functions ---
+# API Functions
 
 def signup_user(username, password, role):
     try:
@@ -444,7 +444,7 @@ def download_report_file(token, doc_id):
         return None
 
 
-# --- Enhanced Sidebar & Auth Flow ---
+# Sidebar & Auth Flow 
 st.sidebar.markdown('<div class="brand-logo">🏥</div>', unsafe_allow_html=True)
 st.sidebar.markdown("<h2 style='text-align: center; color: white; margin-bottom: 1rem;'>MedRagnosis</h2>", unsafe_allow_html=True)
 st.sidebar.markdown("<p style='text-align: center; color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 2rem;'>AI-Powered Healthcare Intelligence</p>", unsafe_allow_html=True)
@@ -464,9 +464,6 @@ if st.session_state.logged_in:
     """, unsafe_allow_html=True)
     
     st.sidebar.markdown("---")
-    
-    # Quick Stats or Info
-    
     
     if st.sidebar.button("🚪 Logout", use_container_width=True):
         st.session_state.logged_in = False
@@ -514,7 +511,7 @@ else:
             else:
                 st.warning("Please fill in all fields")
 
-# --- Enhanced Main Page Layout ---
+# Enhanced Main Page Layout
 st.markdown("""
     <div class="hero-header">
         <h1>🏥 MedRagnosis</h1>
@@ -556,7 +553,7 @@ if not st.session_state.logged_in:
     st.info("👈 **Get Started:** Login or create an account from the sidebar to access the platform")
     
 else:
-# ------------------ PATIENT VIEW ------------------
+# PATIENT VIEW 
     if st.session_state.role == "patient":
         
         tab_consult, tab_history = st.tabs(["💬 AI Consultation", "📜 My Medical History"])
@@ -648,7 +645,6 @@ else:
                     st.info("📋 Please upload a medical report to start the consultation")
 
         with tab_history:
-            # --- REMOVED <div class="modern-card"> ---
             col_title, col_refresh = st.columns([4, 1])
             with col_title:
                 st.markdown("### 🩺 Diagnosis History & Doctor Reviews")
@@ -695,9 +691,9 @@ else:
                                 st.caption(f"✍️ Reviewed by: Dr. {rec['verified_by']}")
             else:
                 st.error("❌ Could not fetch history. Server might be down.")
-            # --- REMOVED </div> ---
+      
 
-   # ------------------ DOCTOR VIEW ------------------
+   # DOCTOR VIEW
     elif st.session_state.role == "doctor":
         st.markdown("## 👨‍⚕️ Doctor Dashboard")
         
@@ -757,10 +753,9 @@ else:
                         st.error(f"❌ {data.get('detail', 'Search failed')}")
             elif search_btn and not patient_name:
                 st.warning("⚠️ Please enter a patient username")
-            # --- REMOVED </div> ---
+          
         
         with tab_review:
-            # --- REMOVED <div class="modern-card"> ---
             col_title, col_refresh = st.columns([4, 1])
             with col_title:
                 st.markdown("### 🩺 Pending Diagnosis Reviews")
@@ -785,7 +780,7 @@ else:
                             st.markdown("#### 🤖 AI-Generated Diagnosis")
                             st.markdown(f"> {rec.get('answer')}")
 
-                            # --- Report View Logic ---
+                            # Report View Logic
                             st.markdown("---")
                             st.markdown("#### 📄 Clinical Source")
                             doc_id = rec.get("doc_id")

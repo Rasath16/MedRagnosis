@@ -33,7 +33,6 @@ class ChatRequest(BaseModel):
     doc_id: str
     messages: List[ChatMessage]
 
-# --- ADDED THIS CLASS ---
 class VerificationRequest(BaseModel):
     record_id: str
     status: str
