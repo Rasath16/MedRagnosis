@@ -700,7 +700,7 @@ else:
             
             st.markdown('</div>', unsafe_allow_html=True)
 
-    # ------------------ DOCTOR VIEW ------------------
+   # ------------------ DOCTOR VIEW ------------------
     elif st.session_state.role == "doctor":
         st.markdown("## 👨‍⚕️ Doctor Dashboard")
         
@@ -726,3 +726,150 @@ else:
                             status = rec.get("verification_status", "pending")
                             icon = "✅" if status == "verified" else "❌" if status == "rejected" else "⏳"
                             timestamp = datetime.datetime.fromtimestamp(rec.get('timestamp', 0)).strftime('%B %d, %Y')
+                            
+                            with st.expander(f"{icon} {timestamp} - {rec.get('question', 'No Question')[:50]}..."):
+                                st.markdown(f"**❓ Patient Question:** {rec.get('question')}")
+                                st.markdown(f"**🤖 AI Diagnosis:** {rec.get('answer')}")
+                                st.markdown("---")
+                                
+                                status_color = "#27ae60" if status == "verified" else "#e74c3c" if status == "rejected" else "#f39c12"
+                                st.markdown(f"<h5 style='color:{status_color}'>{icon} Status: {status.upper()}</h5>", unsafe_allow_html=True)
+                                
+                                if rec.get('doctor_note'):
+                                    st.info(f"📝 **Doctor's Note:** {rec['doctor_note']}")
+                                if rec.get('verified_by'):
+                                    st.caption(f"👨‍⚕️ Reviewed by: Dr. {rec['verified_by']}")
+                    else:
+                        st.error(f"❌ {data.get('detail', 'Search failed')}")
+            elif search_btn and not patient_name:
+                st.warning("⚠️ Please enter a patient username")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        with tab_review:
+            st.markdown('<div class="modern-card">', unsafe_allow_html=True)
+            
+            col_title, col_refresh = st.columns([4, 1])
+            with col_title:
+                st.markdown("### 🩺 Pending Diagnosis Reviews")
+            with col_refresh:
+                if st.button("🔄 Refresh", key="refresh_pending"):
+                    st.rerun()
+            
+            with st.spinner("📥 Loading pending reviews..."):
+                code, pending = get_pending_reviews(st.session_state.token)
+            
+            if code == 200:
+                if pending:
+                    st.info(f"📋 You have **{len(pending)}** diagnosis awaiting review")
+                    
+                    for idx, rec in enumerate(pending):
+                        timestamp = datetime.datetime.fromtimestamp(rec.get('timestamp', 0)).strftime('%B %d, %Y at %I:%M %p')
+                        
+                        with st.expander(f"⏳ Patient: **{rec.get('requester')}** | {timestamp}", expanded=(idx==0)):
+                            st.markdown("#### 📋 Patient Query")
+                            st.info(rec.get('question'))
+                            
+                            st.markdown("#### 🤖 AI-Generated Diagnosis")
+                            st.markdown(f"> {rec.get('answer')}")
+                            
+                            st.markdown("---")
+                            st.markdown("#### ✍️ Your Professional Review")
+                            
+                            note = st.text_area(
+                                "Doctor's Notes", 
+                                key=f"note_{rec['_id']}",
+                                placeholder="Add your professional assessment, recommendations, or corrections...",
+                                height=100
+                            )
+                            
+                            st.markdown("<br>", unsafe_allow_html=True)
+                            
+                            c1, c2, c3 = st.columns([1, 1, 2])
+                            
+                            with c1:
+                                if st.button("✅ Approve", key=f"app_{rec['_id']}", use_container_width=True):
+                                    if note:
+                                        res_code, res_msg = verify_record(
+                                            st.session_state.token, 
+                                            rec['_id'], 
+                                            "verified", 
+                                            note
+                                        )
+                                        if res_code == 200:
+                                            st.success("✅ Diagnosis verified!")
+                                            st.rerun()
+                                        else:
+                                            st.error(f"❌ {res_msg.get('detail', 'Verification failed')}")
+                                    else:
+                                        st.warning("⚠️ Please add a note before approving")
+                            
+                            with c2:
+                                if st.button("❌ Reject", key=f"rej_{rec['_id']}", use_container_width=True):
+                                    if note:
+                                        res_code, res_msg = verify_record(
+                                            st.session_state.token, 
+                                            rec['_id'], 
+                                            "rejected", 
+                                            note
+                                        )
+                                        if res_code == 200:
+                                            st.warning("❌ Diagnosis rejected!")
+                                            st.rerun()
+                                        else:
+                                            st.error(f"❌ {res_msg.get('detail', 'Rejection failed')}")
+                                    else:
+                                        st.warning("⚠️ Please add a note explaining the rejection")
+                            
+                            with c3:
+                                st.caption("💡 **Tip:** Always provide detailed notes for your review")
+                else:
+                    st.success("🎉 All caught up! No pending reviews at the moment.")
+                    st.markdown("""
+                        <div style='text-align: center; padding: 2rem; color: #666;'>
+                            <div style='font-size: 4rem; margin-bottom: 1rem;'>✨</div>
+                            <h3>Great work, Doctor!</h3>
+                            <p>You've reviewed all pending diagnoses. Check back later for new submissions.</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.error("❌ Failed to load pending reviews. Please try again.")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+
+# Enhanced Footer
+st.markdown("---")
+st.markdown("""
+    <div class="footer">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-around; margin-bottom: 2rem; flex-wrap: wrap;">
+                <div style="padding: 1rem; min-width: 200px;">
+                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">🏥 MedRagnosis</h4>
+                    <p style="font-size: 0.9rem; color: #888;">AI-Powered Medical Intelligence Platform</p>
+                </div>
+                <div style="padding: 1rem; min-width: 200px;">
+                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">🔒 Security</h4>
+                    <p style="font-size: 0.9rem; color: #888;">HIPAA Compliant<br>End-to-End Encryption<br>Secure Data Storage</p>
+                </div>
+                <div style="padding: 1rem; min-width: 200px;">
+                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">⚡ Technology</h4>
+                    <p style="font-size: 0.9rem; color: #888;">Powered by GenAI<br>LangChain Integration<br>Advanced RAG System</p>
+                </div>
+                <div style="padding: 1rem; min-width: 200px;">
+                    <h4 style="color: #667eea; margin-bottom: 0.5rem;">📞 Support</h4>
+                    <p style="font-size: 0.9rem; color: #888;">24/7 Available<br>support@medragnosis.ai<br>+1 (555) 123-4567</p>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid #e0e0e0; padding-top: 1.5rem; margin-top: 1.5rem;">
+                <p style="font-size: 0.85rem; color: #999; margin: 0.3rem 0;">
+                    <strong>Disclaimer:</strong> MedRagnosis is an AI-assisted diagnostic tool. All diagnoses should be verified by licensed medical professionals.
+                </p>
+                <p style="font-size: 0.85rem; color: #999; margin: 1rem 0 0 0;">
+                    © 2024 MedRagnosis. All rights reserved. | Privacy Policy | Terms of Service | Medical Disclaimer
+                </p>
+            </div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+                
