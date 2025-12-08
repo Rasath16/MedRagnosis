@@ -556,7 +556,7 @@ if not st.session_state.logged_in:
     st.info("👈 **Get Started:** Login or create an account from the sidebar to access the platform")
     
 else:
-    # ------------------ PATIENT VIEW ------------------
+# ------------------ PATIENT VIEW ------------------
     if st.session_state.role == "patient":
         
         tab_consult, tab_history = st.tabs(["💬 AI Consultation", "📜 My Medical History"])
@@ -565,7 +565,7 @@ else:
             col1, col2 = st.columns([1, 1.5])
             
             with col1:
-                st.markdown('<div class="modern-card">', unsafe_allow_html=True)
+                # --- REMOVED <div class="modern-card"> ---
                 st.markdown("### 📤 Upload Medical Report")
                 
                 with st.form("upload_form"):
@@ -590,10 +590,10 @@ else:
                     elif submitted and not uploaded_files:
                         st.warning("⚠️ Please select files to upload")
                 
-                st.markdown('</div>', unsafe_allow_html=True)
+                # --- REMOVED </div> ---
 
             with col2:
-                st.markdown('<div class="modern-card">', unsafe_allow_html=True)
+                # --- REMOVED <div class="modern-card"> ---
                 
                 h_col, b_col = st.columns([3, 1])
                 with h_col:
@@ -651,6 +651,8 @@ else:
                                         st.error(f"❌ Error: {data.get('detail')}")
                 else:
                     st.info("📋 Please upload a medical report to start the consultation")
+                
+                # --- REMOVED </div> ---
                 
                 st.markdown('</div>', unsafe_allow_html=True)
 
