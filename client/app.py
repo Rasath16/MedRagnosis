@@ -18,62 +18,314 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# Enhanced Custom CSS
 st.markdown("""
 <style>
-    :root {
-        --primary-color: #1e88e5;
-        --secondary-color: #43a047;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * {
+        font-family: 'Inter', sans-serif;
     }
+    
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --danger-gradient: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    .custom-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    }
+    
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h4 {
+        color: #ffffff !important;
+    }
+    
+    [data-testid="stSidebar"] .stTextInput input {
+        background-color: rgba(255, 255, 255, 0.1);
         color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+    }
+    
+    [data-testid="stSidebar"] .stTextInput input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    [data-testid="stSidebar"] .stSelectbox select {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+    }
+    
+    /* Hero Header */
+    .hero-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem 2rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
         margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    .hero-header h1 {
+        color: white;
+        margin: 0;
+        font-size: 3rem;
+        font-weight: 700;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .hero-header p {
+        color: rgba(255, 255, 255, 0.95);
+        margin: 1rem 0 0 0;
+        font-size: 1.2rem;
+        font-weight: 300;
+    }
+    
+    /* Modern Cards */
+    .modern-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .modern-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
     }
     
     .info-card {
-        background: navy blue;
-        padding: 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-        margin-bottom: 1rem;
-        border-left: 4px solid #1e88e5;
-    }
-    
-    .success-card {
-        background: linear-gradient(135deg, #43a047 0%, #66bb6a 100%);
-        padding: 1.5rem;
-        border-radius: 10px;
-        color: white;
-        margin: 1rem 0;
-    }
-    
-    .record-card {
-        background: navy blue;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
         padding: 1.5rem;
         border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        margin: 1.5rem 0;
-        border-top: 4px solid #764ba2;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+        backdrop-filter: blur(10px);
     }
     
+    .info-card h4 {
+        color: white !important;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .info-card p {
+        color: rgba(255, 255, 255, 0.9) !important;
+        margin: 0.3rem 0;
+    }
+    
+    /* Status Badges */
     .status-badge {
         display: inline-block;
-        padding: 0.4rem 1rem;
-        border-radius: 20px;
+        padding: 0.5rem 1.2rem;
+        border-radius: 25px;
         font-weight: 600;
         font-size: 0.85rem;
         margin: 0.5rem 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
-    .badge-patient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:navy blue; }
-    .badge-doctor { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:= navy blue; }
+    .badge-patient { 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .badge-doctor { 
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+    }
+    
+    /* Welcome Card in Sidebar */
+    .welcome-card {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin: 1rem 0;
+    }
+    
+    .welcome-card h4 {
+        color: white !important;
+        margin-bottom: 0.8rem;
+        font-size: 1.1rem;
+    }
+    
+    .welcome-card p {
+        color: rgba(255, 255, 255, 0.9) !important;
+        margin: 0.3rem 0;
+        font-size: 1rem;
+    }
+    
+    /* Buttons */
+    .stButton button {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    /* Chat Container */
+    [data-testid="stChatMessageContainer"] {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1rem;
+    }
+    
+    /* File Uploader */
+    [data-testid="stFileUploader"] {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px dashed rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: transparent;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 10px;
+        padding: 0.8rem 1.5rem;
+        background: white;
+        border: 1px solid #e0e0e0;
+        font-weight: 600;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+    
+    /* Expander */
+    .streamlit-expanderHeader {
+        background: white;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        font-weight: 600;
+    }
+    
+    /* Record Card Styles */
+    .record-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin: 1rem 0;
+        border-left: 4px solid #764ba2;
+    }
+    
+    /* Status Colors */
+    .status-verified {
+        color: #27ae60;
+        font-weight: 600;
+    }
+    
+    .status-pending {
+        color: #f39c12;
+        font-weight: 600;
+    }
+    
+    .status-rejected {
+        color: #e74c3c;
+        font-weight: 600;
+    }
+    
+    /* Logo/Brand */
+    .brand-logo {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    /* Divider */
+    hr {
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        margin: 1.5rem 0;
+    }
+    
+    /* Footer */
+    .footer {
+        text-align: center;
+        padding: 3rem 0 2rem 0;
+        color: #666;
+        border-top: 1px solid #e0e0e0;
+        margin-top: 3rem;
+    }
+    
+    .footer p {
+        margin: 0.5rem 0;
+    }
+    
+    /* Feature Icons */
+    .feature-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Success Message Styling */
+    .stSuccess {
+        border-radius: 10px;
+        border-left: 4px solid #27ae60;
+    }
+    
+    /* Info Message Styling */
+    .stInfo {
+        border-radius: 10px;
+        border-left: 4px solid #4facfe;
+    }
+    
+    /* Error Message Styling */
+    .stError {
+        border-radius: 10px;
+        border-left: 4px solid #e74c3c;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -101,10 +353,9 @@ def signup_user(username, password, role):
 
 def authenticate_user(username, password):
     try:
-        # Expects JWT response
         response = requests.post(
             f"{API_URL}/auth/login",
-            json={"username": username, "password": password, "role": "patient"} # role ignored by login
+            json={"username": username, "password": password, "role": "patient"}
         )
         return response.status_code, response.json()
     except requests.exceptions.ConnectionError:
@@ -127,7 +378,6 @@ def get_chat_response(token, doc_id, messages, mode="current"):
     try:
         headers = {'Authorization': f'Bearer {token}'}
         
-        # Decide endpoint based on mode
         if mode == "trends":
             endpoint = f"{API_URL}/diagnosis/longitudinal"
         else:
@@ -173,7 +423,6 @@ def verify_record(token, record_id, status, note):
         return 503, {"detail": "Server is unavailable."}
 
 def get_patient_history(token):
-    """Fetches the logged-in patient's diagnosis history."""
     try:
         headers = {'Authorization': f'Bearer {token}'}
         response = requests.get(f"{API_URL}/diagnosis/my_history", headers=headers)
@@ -182,21 +431,36 @@ def get_patient_history(token):
         return 503, {"detail": "Server is unavailable."}
 
 
-# --- Sidebar & Auth Flow ---
-st.sidebar.markdown("### 🏥 MedRagnosis")
+# --- Enhanced Sidebar & Auth Flow ---
+st.sidebar.markdown('<div class="brand-logo">🏥</div>', unsafe_allow_html=True)
+st.sidebar.markdown("<h2 style='text-align: center; color: white; margin-bottom: 1rem;'>MedRagnosis</h2>", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='text-align: center; color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 2rem;'>AI-Powered Healthcare Intelligence</p>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
 if st.session_state.logged_in:
     role_badge = "badge-patient" if st.session_state.role == "patient" else "badge-doctor"
     role_icon = "👤" if st.session_state.role == "patient" else "👨‍⚕️"
+    role_name = "Patient" if st.session_state.role == "patient" else "Doctor"
     
     st.sidebar.markdown(f"""
-        <div class="info-card">
-            <h4>{role_icon} Welcome!</h4>
-            <p><strong>{st.session_state.username}</strong></p>
-            <span class="status-badge {role_badge}">{st.session_state.role.upper()}</span>
+        <div class="welcome-card">
+            <h4>{role_icon} Welcome Back!</h4>
+            <p style='font-size: 1.1rem; font-weight: 600;'>{st.session_state.username}</p>
+            <span class="status-badge {role_badge}">{role_name}</span>
         </div>
     """, unsafe_allow_html=True)
+    
+    st.sidebar.markdown("---")
+    
+    # Quick Stats or Info
+    if st.session_state.role == "patient":
+        st.sidebar.markdown("### 📊 Quick Access")
+        st.sidebar.info("💡 **Tip:** Upload multiple reports to track health trends over time")
+    else:
+        st.sidebar.markdown("### 🩺 Doctor Tools")
+        st.sidebar.info("🔍 Review pending diagnoses and validate AI recommendations")
+    
+    st.sidebar.markdown("---")
     
     if st.sidebar.button("🚪 Logout", use_container_width=True):
         st.session_state.logged_in = False
@@ -208,9 +472,11 @@ else:
     tab1, tab2 = st.sidebar.tabs(["🔐 Login", "📝 Signup"])
     
     with tab1:
-        login_user = st.text_input("Username", key="login_user")
-        login_pass = st.text_input("Password", type="password", key="login_pass")
-        if st.button("Login", use_container_width=True):
+        st.markdown("##### Sign in to your account")
+        login_user = st.text_input("Username", key="login_user", placeholder="Enter your username")
+        login_pass = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
+        
+        if st.button("🔓 Login", use_container_width=True):
             if login_user and login_pass:
                 with st.spinner("Authenticating..."):
                     code, data = authenticate_user(login_user, login_pass)
@@ -219,239 +485,139 @@ else:
                         st.session_state.username = data["username"]
                         st.session_state.role = data["role"]
                         st.session_state.token = data["access_token"]
-                        st.success("Success!")
+                        st.success("✅ Login successful!")
                         st.rerun()
                     else:
-                        st.error(data.get("detail", "Login failed"))
+                        st.error(f"❌ {data.get('detail', 'Login failed')}")
+            else:
+                st.warning("Please fill in all fields")
     
     with tab2:
-        reg_user = st.text_input("Choose Username", key="reg_user")
-        reg_pass = st.text_input("Choose Password", type="password", key="reg_pass")
-        reg_role = st.selectbox("Role", ["patient", "doctor"], key="reg_role")
-        if st.button("Create Account", use_container_width=True):
+        st.markdown("##### Create a new account")
+        reg_user = st.text_input("Choose Username", key="reg_user", placeholder="Pick a username")
+        reg_pass = st.text_input("Choose Password", type="password", key="reg_pass", placeholder="Create a secure password")
+        reg_role = st.selectbox("Account Type", ["patient", "doctor"], key="reg_role")
+        
+        if st.button("✨ Create Account", use_container_width=True):
             if reg_user and reg_pass:
                 code, data = signup_user(reg_user, reg_pass, reg_role)
                 if code == 200:
-                    st.success("Account created! Please login.")
+                    st.success("✅ Account created! Please login.")
                 else:
-                    st.error(data.get("detail", "Failed"))
+                    st.error(f"❌ {data.get('detail', 'Registration failed')}")
+            else:
+                st.warning("Please fill in all fields")
 
-# --- Main Page Layout ---
-# --- Main Page Layout ---
-st.markdown('<div class="custom-card"><h1 style="color: white; margin: 0;">🏥 MedRagnosis</h1><p style="margin: 0.5rem 0 0 0; opacity: 0.9;">AI-Powered Medical Intelligence</p></div>', unsafe_allow_html=True)
+# --- Enhanced Main Page Layout ---
+st.markdown("""
+    <div class="hero-header">
+        <h1>🏥 MedRagnosis</h1>
+        <p>Transforming Healthcare with AI-Powered Medical Intelligence</p>
+    </div>
+""", unsafe_allow_html=True)
 
 if not st.session_state.logged_in:
-    st.info("👈 Please login from the sidebar to access the platform.")
-    
-    # Hero Section
-    st.markdown("""
-    <div style="text-align: center; padding: 2rem 0 1rem 0;">
-        <h2 style="color: #667eea; margin-bottom: 1rem;">Transform Healthcare with AI-Driven Insights</h2>
-        <p style="font-size: 1.1rem; color: #666; max-width: 800px; margin: 0 auto; line-height: 1.6;">
-            MedRagnosis combines cutting-edge artificial intelligence with medical expertise to provide 
-            accurate diagnosis analysis, treatment recommendations, and comprehensive health insights.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Key Features
-    st.markdown("<h3 style='text-align: center; color: #764ba2; margin: 2rem 0 1.5rem 0;'>🌟 Platform Features</h3>", unsafe_allow_html=True)
-    
+    # Landing Page for Non-Logged In Users
     col1, col2, col3 = st.columns(3)
     
     with col1:
         st.markdown("""
-        <div class="info-card" style="text-align: center; height: 280px; display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔍</div>
-            <h3 style="color: #667eea; margin-bottom: 0.8rem;">AI Report Analysis</h3>
-            <p style="color: #666; line-height: 1.5;">
-                Upload medical reports and get instant AI-powered analysis with intelligent diagnosis suggestions.
-            </p>
-        </div>
+            <div class="modern-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI-Powered Analysis</h3>
+                <p>Advanced machine learning algorithms analyze your medical reports with precision and speed.</p>
+            </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
-        <div class="info-card" style="text-align: center; height: 280px; display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 3.5rem; margin-bottom: 1rem;">💬</div>
-            <h3 style="color: #667eea; margin-bottom: 0.8rem;">Interactive Consultation</h3>
-            <p style="color: #666; line-height: 1.5;">
-                Chat with our AI assistant for personalized health insights and medical information.
-            </p>
-        </div>
+            <div class="modern-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Secure & Private</h3>
+                <p>Your health data is encrypted and protected with enterprise-grade security measures.</p>
+            </div>
         """, unsafe_allow_html=True)
     
     with col3:
         st.markdown("""
-        <div class="info-card" style="text-align: center; height: 280px; display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 3.5rem; margin-bottom: 1rem;">👨‍⚕️</div>
-            <h3 style="color: #667eea; margin-bottom: 0.8rem;">Doctor Verification</h3>
-            <p style="color: #666; line-height: 1.5;">
-                All AI diagnoses are reviewed and verified by licensed medical professionals.
-            </p>
-        </div>
+            <div class="modern-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Instant Insights</h3>
+                <p>Get immediate analysis and actionable insights from your medical documents.</p>
+            </div>
         """, unsafe_allow_html=True)
     
-    # How It Works Section
-    st.markdown("<h3 style='text-align: center; color: #764ba2; margin: 3rem 0 1.5rem 0;'>🚀 How It Works</h3>", unsafe_allow_html=True)
+    st.info("👈 **Get Started:** Login or create an account from the sidebar to access the platform")
     
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("""
-        <div class="info-card">
-            <h4 style="color: #667eea;">👤 For Patients</h4>
-            <ol style="color: #666; line-height: 2;">
-                <li><strong>Sign Up & Login</strong> - Create your secure account</li>
-                <li><strong>Upload Reports</strong> - Submit your medical documents (PDF/TXT)</li>
-                <li><strong>AI Analysis</strong> - Get instant intelligent diagnosis insights</li>
-                <li><strong>Ask Questions</strong> - Interactive consultation with AI assistant</li>
-                <li><strong>Track Status</strong> - Monitor doctor verification in real-time</li>
-                <li><strong>View History</strong> - Access all your past consultations</li>
-            </ol>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class="info-card">
-            <h4 style="color: #f5576c;">👨‍⚕️ For Doctors</h4>
-            <ol style="color: #666; line-height: 2;">
-                <li><strong>Professional Login</strong> - Access your doctor dashboard</li>
-                <li><strong>Review Diagnoses</strong> - See pending AI-generated diagnoses</li>
-                <li><strong>Patient History</strong> - Search and view patient records</li>
-                <li><strong>Verify/Reject</strong> - Approve or reject AI diagnoses</li>
-                <li><strong>Add Notes</strong> - Provide professional medical commentary</li>
-                <li><strong>Ensure Quality</strong> - Maintain diagnostic accuracy standards</li>
-            </ol>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Technology Stack
-    st.markdown("<h3 style='text-align: center; color: #764ba2; margin: 3rem 0 1.5rem 0;'>⚡ Powered By Advanced AI</h3>", unsafe_allow_html=True)
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.markdown("""
-        <div style="text-align: center; padding: 1rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🤖</div>
-            <p style="color: #666; font-weight: 600;">LangChain RAG</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div style="text-align: center; padding: 1rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📊</div>
-            <p style="color: #666; font-weight: 600;">Vector Database</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown("""
-        <div style="text-align: center; padding: 1rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔐</div>
-            <p style="color: #666; font-weight: 600;">Secure Auth</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col4:
-        st.markdown("""
-        <div style="text-align: center; padding: 1rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">☁️</div>
-            <p style="color: #666; font-weight: 600;">Cloud API</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Important Disclaimer
-    st.markdown("<div style='margin-top: 2rem;'></div>", unsafe_allow_html=True)
-    st.warning("""
-    **⚠️ Important Medical Disclaimer**
-    
-    MedRagnosis is an AI-powered diagnostic assistance tool designed to support healthcare decision-making. 
-    It is **NOT a substitute** for professional medical advice, diagnosis, or treatment. All AI-generated 
-    diagnoses are subject to doctor verification. Always consult qualified healthcare providers for medical 
-    concerns. Never disregard professional medical advice or delay seeking it because of information from this platform.
-    """)
-    
-    # Call to Action
-    st.markdown("""
-    <div style="text-align: center; padding: 2.5rem; margin-top: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-        <h2 style="color: white; margin-bottom: 1rem;">Ready to Experience Smart Healthcare?</h2>
-        <p style="color: white; opacity: 0.95; margin-bottom: 1.5rem; font-size: 1.1rem;">
-            Join thousands of patients and doctors using AI-powered medical intelligence.
-        </p>
-        <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; display: inline-block;">
-            <p style="color: white; font-size: 1.2rem; margin: 0;">
-                👈 <strong>Use the sidebar to login or create your account</strong>
-            </p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
 else:
     # ------------------ PATIENT VIEW ------------------
     if st.session_state.role == "patient":
         
-        # Tabs for different patient functions
-        tab_consult, tab_history = st.tabs(["💬 Consultation", "📜 My History & Status"])
+        tab_consult, tab_history = st.tabs(["💬 AI Consultation", "📜 My Medical History"])
         
-        # --- TAB 1: Chat & Upload ---
         with tab_consult:
             col1, col2 = st.columns([1, 1.5])
             
-            # LEFT: Upload
             with col1:
-                st.markdown("### 📤 Upload Report")
-                st.markdown('<div class="info-card">', unsafe_allow_html=True)
+                st.markdown('<div class="modern-card">', unsafe_allow_html=True)
+                st.markdown("### 📤 Upload Medical Report")
+                
                 with st.form("upload_form"):
-                    uploaded_files = st.file_uploader("PDF/TXT Files", type=["pdf", "txt"], accept_multiple_files=True)
-                    submitted = st.form_submit_button("Upload & Analyze", use_container_width=True)
+                    st.markdown("Upload your medical documents for AI analysis")
+                    uploaded_files = st.file_uploader(
+                        "Select PDF or TXT files", 
+                        type=["pdf", "txt"], 
+                        accept_multiple_files=True,
+                        help="You can upload multiple files at once"
+                    )
+                    submitted = st.form_submit_button("🚀 Upload & Analyze", use_container_width=True)
                     
                     if submitted and uploaded_files:
-                        with st.spinner("Processing (OCR + Vectorizing)..."):
+                        with st.spinner("🔄 Processing your reports (OCR + AI Vectorization)..."):
                             code, data = upload_report(st.session_state.token, uploaded_files)
                             if code == 200:
                                 st.session_state.doc_id = data['doc_id']
-                                # AUTO-CLEAR: Reset chat on new upload
                                 st.session_state.messages = [] 
-                                st.success(f"Uploaded! ID: {data['doc_id']}")
+                                st.success(f"✅ Successfully uploaded! Document ID: {data['doc_id']}")
                             else:
-                                st.error(data.get("detail", "Error"))
+                                st.error(f"❌ {data.get('detail', 'Upload failed')}")
+                    elif submitted and not uploaded_files:
+                        st.warning("⚠️ Please select files to upload")
+                
                 st.markdown('</div>', unsafe_allow_html=True)
 
-            # RIGHT: Chat 
             with col2:
-                # Header + Clear Button
+                st.markdown('<div class="modern-card">', unsafe_allow_html=True)
+                
                 h_col, b_col = st.columns([3, 1])
                 with h_col:
-                    st.markdown("### 💬 AI Consultant")
+                    st.markdown("### 💬 AI Medical Consultant")
                 with b_col:
-                    if st.button("🗑️ Clear Chat", use_container_width=True):
+                    if st.button("🗑️ Clear", use_container_width=True):
                         st.session_state.messages = []
                         st.rerun()
                 
-                st.markdown('<div class="info-card">', unsafe_allow_html=True)
-                
                 if 'doc_id' in st.session_state:
-                    # Analysis Mode Toggle
-                    mode = st.radio("Analysis Scope:", ["Current Report", "All Reports (Trends)"], horizontal=True)
+                    mode = st.radio(
+                        "Analysis Scope:", 
+                        ["Current Report", "All Reports (Trends)"], 
+                        horizontal=True,
+                        help="Choose whether to analyze just the current report or track trends across all your reports"
+                    )
                     api_mode = "trends" if mode == "All Reports (Trends)" else "current"
 
                     if "messages" not in st.session_state:
                         st.session_state.messages = []
 
-                    # Display Chat History
                     chat_container = st.container(height=400)
                     with chat_container:
                         if not st.session_state.messages:
-                            st.info(f"Ready to analyze {mode.lower()}. Ask me anything!")
+                            st.info(f"🤖 AI ready to analyze your {mode.lower()}. Ask me anything about your health!")
                         for msg in st.session_state.messages:
                             with st.chat_message(msg["role"]):
                                 st.markdown(msg["content"])
 
-                    # Chat Input
-                    if prompt := st.chat_input("Type your medical question..."):
+                    if prompt := st.chat_input("💭 Type your medical question here..."):
                         st.session_state.messages.append({"role": "user", "content": prompt})
                         with chat_container:
                             with st.chat_message("user"):
@@ -459,7 +625,7 @@ else:
                         
                         with chat_container:
                             with st.chat_message("assistant"):
-                                with st.spinner("Thinking..."):
+                                with st.spinner("🧠 Analyzing..."):
                                     code, data = get_chat_response(
                                         st.session_state.token,
                                         st.session_state.doc_id,
@@ -471,52 +637,56 @@ else:
                                         ans = data.get("diagnosis", "No response")
                                         st.markdown(ans)
                                         if data.get("sources"):
-                                            with st.expander("Sources"):
+                                            with st.expander("📚 View Sources"):
                                                 st.json(data["sources"])
                                         st.session_state.messages.append({"role": "assistant", "content": ans})
-                                        
-                                        # Optional: Hint that status is pending
-                                        st.caption("ℹ️ diagnosis saved to history (Pending Doctor Review)")
+                                        st.caption("ℹ️ Diagnosis saved to history (⏳ Pending Doctor Review)")
                                     else:
-                                        st.error(f"Error: {data.get('detail')}")
+                                        st.error(f"❌ Error: {data.get('detail')}")
                 else:
-                    st.info("Please upload a report to start.")
+                    st.info("📋 Please upload a medical report to start the consultation")
+                
                 st.markdown('</div>', unsafe_allow_html=True)
 
-        # --- TAB 2: History & Status ---
         with tab_history:
-            st.markdown("### 🩺 Diagnosis History & Doctor Reviews")
-            if st.button("🔄 Refresh Status", key="refresh_hist"):
-                st.rerun()
+            st.markdown('<div class="modern-card">', unsafe_allow_html=True)
+            
+            col_title, col_refresh = st.columns([4, 1])
+            with col_title:
+                st.markdown("### 🩺 Diagnosis History & Doctor Reviews")
+            with col_refresh:
+                if st.button("🔄 Refresh", key="refresh_hist"):
+                    st.rerun()
                 
-            with st.spinner("Fetching history..."):
+            with st.spinner("📥 Fetching your medical history..."):
                 code, history = get_patient_history(st.session_state.token)
             
             if code == 200:
                 if not history:
-                    st.info("No diagnosis history found.")
+                    st.info("📭 No diagnosis history found. Start by uploading a report and asking questions!")
                 else:
                     for rec in history:
-                        # Determine Styling based on Status
                         status = rec.get('verification_status', 'pending').lower()
                         
                         if status == 'verified':
-                            color = "#27ae60" # Green
+                            color = "#27ae60"
                             icon = "✅"
                             status_text = "VERIFIED BY DOCTOR"
                         elif status == 'rejected':
-                            color = "#e74c3c" # Red
+                            color = "#e74c3c"
                             icon = "❌"
-                            status_text = "REJECTED"
+                            status_text = "NEEDS REVIEW"
                         else:
-                            color = "#f39c12" # Orange
+                            color = "#f39c12"
                             icon = "⏳"
                             status_text = "PENDING REVIEW"
 
-                        # Render Card
-                        with st.expander(f"{icon} {datetime.datetime.fromtimestamp(rec['timestamp']).strftime('%Y-%m-%d %H:%M')} - {rec.get('question')[:50]}..."):
-                            st.markdown(f"**Q:** {rec.get('question')}")
-                            st.markdown(f"**AI Answer:** {rec.get('answer')}")
+                        timestamp = datetime.datetime.fromtimestamp(rec['timestamp']).strftime('%B %d, %Y at %I:%M %p')
+                        question_preview = rec.get('question', '')[:60] + "..." if len(rec.get('question', '')) > 60 else rec.get('question', '')
+                        
+                        with st.expander(f"{icon} {timestamp} - {question_preview}"):
+                            st.markdown(f"**❓ Question:** {rec.get('question')}")
+                            st.markdown(f"**🤖 AI Analysis:** {rec.get('answer')}")
                             st.markdown("---")
                             st.markdown(f"<h5 style='color:{color}'>{icon} Status: {status_text}</h5>", unsafe_allow_html=True)
                             
@@ -524,75 +694,35 @@ else:
                                 st.info(f"👨‍⚕️ **Doctor's Note:** {rec['doctor_note']}")
                             
                             if rec.get('verified_by'):
-                                st.caption(f"Reviewed by: Dr. {rec['verified_by']}")
+                                st.caption(f"✍️ Reviewed by: Dr. {rec['verified_by']}")
             else:
-                st.error("Could not fetch history. Server might be down.")
+                st.error("❌ Could not fetch history. Server might be down.")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
 
     # ------------------ DOCTOR VIEW ------------------
     elif st.session_state.role == "doctor":
         st.markdown("## 👨‍⚕️ Doctor Dashboard")
         
-        tab_history, tab_review = st.tabs(["🔍 Patient History", "🩺 Pending Reviews"])
+        tab_history, tab_review = st.tabs(["🔍 Patient Search", "🩺 Pending Reviews"])
         
-        # TAB 1: Search 
         with tab_history:
-            patient_name = st.text_input("Enter Patient Username")
-            if st.button("Search Records"):
-                with st.spinner("Fetching..."):
+            st.markdown('<div class="modern-card">', unsafe_allow_html=True)
+            st.markdown("### 🔍 Search Patient Records")
+            
+            col_search, col_btn = st.columns([3, 1])
+            with col_search:
+                patient_name = st.text_input("Enter Patient Username", placeholder="Search by username")
+            with col_btn:
+                st.markdown("<br>", unsafe_allow_html=True)
+                search_btn = st.button("🔎 Search", use_container_width=True)
+            
+            if search_btn and patient_name:
+                with st.spinner("🔍 Searching records..."):
                     code, data = get_doctor_diagnosis(st.session_state.token, patient_name)
                     if code == 200:
-                        st.success(f"Found {len(data)} records")
+                        st.success(f"✅ Found {len(data)} record(s) for {patient_name}")
                         for rec in data:
-                            # Show verification status in doctor search as well
                             status = rec.get("verification_status", "pending")
-                            icon = "✅" if status == "verified" else "⏳"
-                            
-                            with st.expander(f"{icon} {rec.get('question', 'No Q')[:40]}..."):
-                                st.write(f"**Question:** {rec.get('question')}")
-                                st.write(f"**AI Answer:** {rec.get('answer')}")
-                                st.caption(f"Status: {status} | Date: {datetime.datetime.fromtimestamp(rec.get('timestamp', 0))}")
-                    else:
-                        st.error(data.get("detail", "Error"))
-        
-        #  TAB 2: Validation 
-        with tab_review:
-            if st.button("🔄 Refresh Pending"):
-                st.rerun()
-            
-            # Fetch pending records
-            code, pending = get_pending_reviews(st.session_state.token)
-            
-            if code == 200: 
-                if pending:
-                    for rec in pending:
-                        with st.expander(f"Patient: {rec.get('requester')} | {rec.get('question')[:40]}..."):
-                            st.write(f"**Question:** {rec.get('question')}")
-                            st.info(f"**AI Diagnosis:** {rec.get('answer')}")
-                            
-                            note = st.text_input("Doctor Note", key=f"note_{rec['_id']}")
-                            
-                            c1, c2 = st.columns(2)
-                            if c1.button("✅ Approve", key=f"app_{rec['_id']}"):
-                                res_code, res_msg = verify_record(st.session_state.token, rec['_id'], "verified", note or "Approved")
-                                if res_code == 200: 
-                                    st.success("Verified!")
-                                    st.rerun()
-                                
-                            if c2.button("❌ Reject", key=f"rej_{rec['_id']}"):
-                                res_code, res_msg = verify_record(st.session_state.token, rec['_id'], "rejected", note or "Rejected")
-                                if res_code == 200: 
-                                    st.warning("Rejected!")
-                                    st.rerun()
-                else:
-                    st.info("No pending reviews found. All caught up! 🎉")
-            else:
-                st.error("Failed to load pending reviews.")
-
-# Footer
-st.markdown("---")
-st.markdown("""
-    <div style="text-align: center; color: #666; padding: 2rem 0;">
-        <p><strong>MedRagnosis</strong> - Powered by GenAI & LangChain 🤖</p>
-        <p style="font-size: 0.85rem;">Secure • Reliable • Intelligent Healthcare</p>
-    </div>
-""", unsafe_allow_html=True)
+                            icon = "✅" if status == "verified" else "❌" if status == "rejected" else "⏳"
+                            timestamp = datetime.datetime.fromtimestamp(rec.get('timestamp', 0)).strftime('%B %d, %Y')
