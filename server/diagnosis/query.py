@@ -20,7 +20,7 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 pc = Pinecone(api_key=PINECONE_API_KEY)
 index = pc.Index(PINECONE_INDEX_NAME)
 
-embed_model = OpenAIEmbeddings(model="text-embedding-3-small")
+embed_model = OpenAIEmbeddings(model="text-embedding-3-small", api_key=OPENAI_API_KEY)
 llm = ChatGroq(temperature=0, model_name="llama-3.3-70b-versatile", groq_api_key=GROQ_API_KEY)
 
 # 1. Chain to Rephrase Follow-up Questions 
@@ -40,6 +40,8 @@ qa_system = """You are a medical assistant AI called MedRagnosis.
 Use the following pieces of retrieved context to answer the question.
 If you don't know the answer, just say that you don't know. 
 Keep the answer concise but professional.
+ALWAYS reference the source context when making a medical claim (e.g., "According to the Blood Test (Page 1)...").
+If the context does not contain the answer, explicitly say so.
 
 Context:
 {context}
