@@ -66,8 +66,6 @@ MedRagnosis/
 └── README.md
 ```
 
-````
-
 ---
 
 ## ⚙️ Local Development Setup
@@ -217,4 +215,7 @@ This project is licensed under the **MIT License**.
 ```
 
 ```
-````
+
+```
+
+```
