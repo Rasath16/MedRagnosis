@@ -1,6 +1,7 @@
+````markdown
 # 🏥 MedRagnosis – RAG-Enhanced Medical Diagnosis Platform
 
-**MedRagnosis** is an AI-powered medical diagnostic tool that uses a **Retrieval-Augmented Generation (RAG)** architecture to analyze patient medical reports. It provides preliminary diagnoses, key findings, and recommendations using the **Groq LLaMA 3.3** engine, accessible via a user-friendly Streamlit chat interface.
+**MedRagnosis** is an AI-powered medical diagnostic tool that uses a **Retrieval-Augmented Generation (RAG)** architecture to analyze patient medical reports. It bridges the gap between AI insights and professional medical oversight by combining a patient-facing chat interface with a doctor-facing verification dashboard.
 
 > **🔴 Live Demo:** [https://medragnosis.streamlit.app/](https://medragnosis.streamlit.app/)
 >
@@ -8,37 +9,41 @@
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
 ### 👤 For Patients
 
-- **Secure Account Management:** Sign up and log in securely using **JWT (JSON Web Token)** authentication.
-- **Advanced Document Upload (OCR):** Upload medical reports (PDF/TXT). Supports both digital text and **scanned image-based reports** using integrated OCR (Tesseract).
-- **Conversational AI Consultant:** Chat naturally with the AI about your report. Ask follow-up questions like "What does that result mean?" or "Is this serious?" maintaining full context.
-- **Smart Context:** The chat history automatically clears when you upload a new report, ensuring focused analysis.
-- **Transparent Sources:** View the specific segments of your report the AI used to generate each answer.
+- **Secure Identity:** Sign up and log in securely using **JWT (JSON Web Token)** authentication.
+- **Advanced Document Upload (OCR):** Upload medical reports (PDF/TXT). The system automatically detects scanned documents and uses **Tesseract OCR** to extract text from images.
+- **AI Consultation:** Chat naturally with the AI about your specific report.
+- **📈 Longitudinal Trend Analysis:** Unlike standard RAG, MedRagnosis allows you to toggle between analyzing a **single report** or **all uploaded reports** to identify health trends over time (e.g., "Has my cholesterol increased over the last year?").
+- **Diagnosis History:** View past AI diagnoses. Crucially, patients can see if a specific AI insight has been **Verified ✅** or **Rejected ❌** by a doctor, along with professional notes.
 
 ### 👨‍⚕️ For Doctors
 
-- **Patient Lookup:** Search for patient records by username.
-- **History Review:** Access a comprehensive history of a patient's past diagnosis queries and AI responses.
+- **Doctor Dashboard:** A specialized interface for medical professionals.
+- **Patient Lookup:** Search for specific patient records by username to review their history.
+- **✅ Verification Loop:** Access a **"Pending Reviews"** queue. Doctors can review the AI's generated diagnosis against the patient's query and mark it as:
+  - **Verified:** The AI analysis is medically sound.
+  - **Rejected:** The AI analysis is incorrect or dangerous.
+- **Annotation:** Add professional notes to any diagnosis, which become immediately visible to the patient.
 
 ---
 
 ## 🛠 Tech Stack
 
-| Component            | Technology                              |
-| :------------------- | :-------------------------------------- |
-| **Frontend**         | Streamlit (Python)                      |
-| **Backend**          | FastAPI (Python 3.13)                   |
-| **Authentication**   | JWT (JSON Web Tokens) with python-jose  |
-| **Containerization** | Docker                                  |
-| **OCR Engine**       | Tesseract, Poppler, pdf2image           |
-| **Database**         | MongoDB (User data & Diagnosis history) |
-| **Vector DB**        | Pinecone (Serverless)                   |
-| **LLM Inference**    | Groq API (LLaMA 3.3-70b-versatile)      |
-| **Embeddings**       | OpenAI (text-embedding-3-small)         |
-| **Orchestration**    | LangChain                               |
+| Component            | Technology                    | Details                                           |
+| :------------------- | :---------------------------- | :------------------------------------------------ |
+| **Frontend**         | Streamlit (Python)            | Custom CSS for Modern UI                          |
+| **Backend**          | FastAPI (Python 3.13)         | Async Endpoints                                   |
+| **Authentication**   | JWT (JSON Web Tokens)         | Role-based access (Patient/Doctor)                |
+| **Containerization** | Docker                        | Multi-stage build with OCR dependencies           |
+| **OCR Engine**       | Tesseract, Poppler, pdf2image | For scanned PDF processing                        |
+| **Database**         | MongoDB                       | User profiles, Report metadata, Diagnosis History |
+| **Vector DB**        | Pinecone (Serverless)         | Stores document embeddings                        |
+| **LLM Inference**    | Groq API                      | **LLaMA 3.3-70b-versatile**                       |
+| **Embeddings**       | OpenAI                        | **text-embedding-3-small**                        |
+| **Orchestration**    | LangChain                     | Context retrieval & Query rewriting               |
 
 ---
 
@@ -47,20 +52,21 @@
 ```text
 MedRagnosis/
 ├── client/              # Streamlit Frontend Application
-│   ├── app.py           # Main UI Logic (Chat Interface)
+│   ├── app.py           # UI Logic (Patient Chat & Doctor Dashboard)
 │   └── requirements.txt # Frontend dependencies
 ├── server/              # FastAPI Backend Application
 │   ├── auth/            # Auth Routes (JWT Handler)
 │   ├── config/          # Database & Env Config
-│   ├── diagnosis/       # RAG Logic (Chat History & OCR)
+│   ├── diagnosis/       # RAG Logic, Trend Analysis & Verification
 │   ├── models/          # Pydantic Data Models
-│   ├── reports/         # File Processing & Vector Ingestion
+│   ├── reports/         # File Processing, OCR & Vector Ingestion
 │   └── main.py          # App Entry Point
 ├── uploaded_dir/        # Local storage for temp files
 ├── Dockerfile           # Container configuration for Render
 ├── requirements.txt     # Backend dependencies
 └── README.md
 ```
+````
 
 ---
 
@@ -154,9 +160,9 @@ cd MedRagnosis
 
 ---
 
-## 🐳 Docker Deployment (Recommended)
+## 🐳 Docker Deployment
 
-This project includes a `Dockerfile` to handle system dependencies (Tesseract/Poppler) automatically.
+The project includes a `Dockerfile` that handles system dependencies (Tesseract/Poppler) automatically.
 
 1.  **Build the image:**
     ```bash
@@ -171,27 +177,29 @@ This project includes a `Dockerfile` to handle system dependencies (Tesseract/Po
 
 ## 📡 API Endpoints
 
-| Method        | Endpoint                     | Description                                                                        |
-| :------------ | :--------------------------- | :--------------------------------------------------------------------------------- |
-| **Auth**      |                              |                                                                                    |
-| `POST`        | `/auth/signup`               | Register a new user (`patient` or `doctor`).                                       |
-| `POST`        | `/auth/login`                | Login and receive a **JWT Access Token**.                                          |
-| **Reports**   |                              |                                                                                    |
-| `POST`        | `/reports/upload`            | Upload PDF reports (Patient only). Supports OCR.                                   |
-| **Diagnosis** |                              |                                                                                    |
-| `POST`        | `/diagnosis/chat`            | Conversational endpoint. Accepts chat history and returns context-aware diagnosis. |
-| `GET`         | `/diagnosis/by_patient_name` | View diagnosis history (Doctor only).                                              |
+| Method        | Endpoint                  | Description                                                              |
+| :------------ | :------------------------ | :----------------------------------------------------------------------- |
+| **Auth**      |                           |                                                                          |
+| `POST`        | `/auth/signup`            | Register a new user (`patient` or `doctor`).                             |
+| `POST`        | `/auth/login`             | Login and receive a **JWT Access Token**.                                |
+| **Reports**   |                           |                                                                          |
+| `POST`        | `/reports/upload`         | Upload PDF reports (Patient only). Supports OCR fallback.                |
+| **Diagnosis** |                           |                                                                          |
+| `POST`        | `/diagnosis/chat`         | **Single Report RAG:** Chat with context from a specific document.       |
+| `POST`        | `/diagnosis/longitudinal` | **Trend Analysis:** Analyzes all reports belonging to a user for trends. |
+| `GET`         | `/diagnosis/pending`      | **Doctor:** Fetch all diagnoses awaiting verification.                   |
+| `POST`        | `/diagnosis/verify`       | **Doctor:** Approve/Reject a diagnosis and add a note.                   |
+| `GET`         | `/diagnosis/my_history`   | **Patient:** Get history including doctor verification status.           |
 
 ---
 
 ## 🔮 Roadmap
 
-- [x] **Frontend Implementation:** Built with Streamlit.
-- [x] **Deployment:** Live on Render (Docker) & Streamlit Cloud.
 - [x] **OCR Support:** Handle scanned/image-based PDF reports.
-- [x] **Chat Interface:** Enable follow-up questions on the diagnosis.
-- [x] **JWT Implementation:** Secure stateless authentication.
-- [ ] **Multi-File Context:** Analyze multiple reports in a single query.
+- [x] **Doctor Verification Loop:** Active dashboard for doctors to validate AI outputs.
+- [x] **Longitudinal Analysis:** Multi-file trend detection.
+- [ ] **Email Notifications:** Notify patients when a doctor reviews their diagnosis.
+- [ ] **Visual Data Parsing:** Extract charts and graphs from reports using Vision models.
 
 ---
 
