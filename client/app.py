@@ -565,7 +565,6 @@ else:
             col1, col2 = st.columns([1, 1.5])
             
             with col1:
-                # --- REMOVED <div class="modern-card"> ---
                 st.markdown("### 📤 Upload Medical Report")
                 
                 with st.form("upload_form"):
@@ -590,11 +589,7 @@ else:
                     elif submitted and not uploaded_files:
                         st.warning("⚠️ Please select files to upload")
                 
-                # --- REMOVED </div> ---
-
             with col2:
-                # --- REMOVED <div class="modern-card"> ---
-                
                 h_col, b_col = st.columns([3, 1])
                 with h_col:
                     st.markdown("### 💬 AI Medical Consultant")
@@ -615,7 +610,7 @@ else:
                     if "messages" not in st.session_state:
                         st.session_state.messages = []
 
-                    chat_container = st.container(height=100)
+                    chat_container = st.container(height=400)
                     with chat_container:
                         if not st.session_state.messages:
                             st.info(f"🤖 AI ready to analyze your {mode.lower()}. Ask me anything about your health!")
@@ -651,14 +646,9 @@ else:
                                         st.error(f"❌ Error: {data.get('detail')}")
                 else:
                     st.info("📋 Please upload a medical report to start the consultation")
-                
-                # --- REMOVED </div> ---
-                
-                st.markdown('</div>', unsafe_allow_html=True)
 
         with tab_history:
-            st.markdown('<div class="modern-card">', unsafe_allow_html=True)
-            
+            # --- REMOVED <div class="modern-card"> ---
             col_title, col_refresh = st.columns([4, 1])
             with col_title:
                 st.markdown("### 🩺 Diagnosis History & Doctor Reviews")
@@ -705,8 +695,7 @@ else:
                                 st.caption(f"✍️ Reviewed by: Dr. {rec['verified_by']}")
             else:
                 st.error("❌ Could not fetch history. Server might be down.")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
+            # --- REMOVED </div> ---
 
    # ------------------ DOCTOR VIEW ------------------
     elif st.session_state.role == "doctor":
@@ -715,7 +704,7 @@ else:
         tab_history, tab_review = st.tabs(["🔍 Patient Search", "🩺 Pending Reviews"])
         
         with tab_history:
-            st.markdown('<div class="modern-card">', unsafe_allow_html=True)
+            # --- REMOVED <div class="modern-card"> ---
             st.markdown("### 🔍 Search Patient Records")
             
             col_search, col_btn = st.columns([3, 1])
@@ -739,21 +728,21 @@ else:
                                 st.markdown(f"**❓ Patient Question:** {rec.get('question')}")
                                 st.markdown(f"**🤖 AI Diagnosis:** {rec.get('answer')}")
                                 
-                                # --- Added Report View ---
+                                # --- Report View Logic ---
                                 doc_id = rec.get("doc_id")
                                 filename = rec.get("filename", "Unknown File")
                                 if doc_id and doc_id != "all-reports":
                                     st.markdown(f"**📄 Source File:** {filename}")
-                                    file_bytes = download_report_file(st.session_state.token, doc_id)
-                                    if file_bytes:
-                                        st.download_button(
-                                            label=f"📥 Download {filename}",
-                                            data=file_bytes,
-                                            file_name=filename,
-                                            mime='application/pdf',
-                                            key=f"dl_search_{rec['_id']}"
-                                        )
-                                # -------------------------
+                                    if filename != "Unknown File":
+                                        file_bytes = download_report_file(st.session_state.token, doc_id)
+                                        if file_bytes:
+                                            st.download_button(
+                                                label=f"📥 Download {filename}",
+                                                data=file_bytes,
+                                                file_name=filename,
+                                                mime='application/pdf',
+                                                key=f"dl_search_{rec['_id']}"
+                                            )
                                 
                                 st.markdown("---")
                                 
@@ -768,12 +757,10 @@ else:
                         st.error(f"❌ {data.get('detail', 'Search failed')}")
             elif search_btn and not patient_name:
                 st.warning("⚠️ Please enter a patient username")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
+            # --- REMOVED </div> ---
         
         with tab_review:
-            st.markdown('<div class="modern-card">', unsafe_allow_html=True)
-            
+            # --- REMOVED <div class="modern-card"> ---
             col_title, col_refresh = st.columns([4, 1])
             with col_title:
                 st.markdown("### 🩺 Pending Diagnosis Reviews")
@@ -798,33 +785,34 @@ else:
                             st.markdown("#### 🤖 AI-Generated Diagnosis")
                             st.markdown(f"> {rec.get('answer')}")
 
-                            # --- Added Report View ---
+                            # --- Report View Logic ---
                             st.markdown("---")
                             st.markdown("#### 📄 Clinical Source")
                             doc_id = rec.get("doc_id")
                             filename = rec.get("filename", "Unknown File")
                             
                             if doc_id == "all-reports":
-                                st.warning("⚠️ This is a longitudinal analysis across multiple reports. Source verification is complex.")
+                                st.warning("⚠️ This is a longitudinal analysis across multiple reports.")
                             elif doc_id:
                                 col_info, col_dl = st.columns([3, 1])
                                 with col_info:
                                     st.markdown(f"**Filename:** `{filename}`")
                                 with col_dl:
-                                    # Fetch file bytes on render
-                                    file_bytes = download_report_file(st.session_state.token, doc_id)
-                                    if file_bytes:
-                                        st.download_button(
-                                            label="📥 Download Report",
-                                            data=file_bytes,
-                                            file_name=filename,
-                                            mime='application/pdf',
-                                            key=f"dl_rev_{rec['_id']}",
-                                            use_container_width=True
-                                        )
+                                    if filename != "Unknown File":
+                                        file_bytes = download_report_file(st.session_state.token, doc_id)
+                                        if file_bytes:
+                                            st.download_button(
+                                                label="📥 Download",
+                                                data=file_bytes,
+                                                file_name=filename,
+                                                mime='application/pdf',
+                                                key=f"dl_rev_{rec['_id']}",
+                                                use_container_width=True
+                                            )
+                                        else:
+                                            st.warning("File missing")
                                     else:
-                                        st.error("File unavailable")
-                            # -------------------------
+                                        st.caption("🚫 Source file not found")
                             
                             st.markdown("---")
                             st.markdown("#### ✍️ Your Professional Review")
@@ -887,5 +875,4 @@ else:
                     """, unsafe_allow_html=True)
             else:
                 st.error("❌ Failed to load pending reviews. Please try again.")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
+           
