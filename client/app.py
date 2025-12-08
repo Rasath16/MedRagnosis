@@ -675,7 +675,7 @@ else:
                         elif status == 'rejected':
                             color = "#e74c3c"
                             icon = "❌"
-                            status_text = "NEEDS REVIEW"
+                            status_text = "REJECTED BY DOCTOR"
                         else:
                             color = "#f39c12"
                             icon = "⏳"
