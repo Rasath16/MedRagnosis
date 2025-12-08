@@ -237,10 +237,158 @@ else:
                     st.error(data.get("detail", "Failed"))
 
 # --- Main Page Layout ---
+# --- Main Page Layout ---
 st.markdown('<div class="custom-card"><h1 style="color: white; margin: 0;">🏥 MedRagnosis</h1><p style="margin: 0.5rem 0 0 0; opacity: 0.9;">AI-Powered Medical Intelligence</p></div>', unsafe_allow_html=True)
 
 if not st.session_state.logged_in:
     st.info("👈 Please login from the sidebar to access the platform.")
+    
+    # Hero Section
+    st.markdown("""
+    <div style="text-align: center; padding: 2rem 0 1rem 0;">
+        <h2 style="color: #667eea; margin-bottom: 1rem;">Transform Healthcare with AI-Driven Insights</h2>
+        <p style="font-size: 1.1rem; color: #666; max-width: 800px; margin: 0 auto; line-height: 1.6;">
+            MedRagnosis combines cutting-edge artificial intelligence with medical expertise to provide 
+            accurate diagnosis analysis, treatment recommendations, and comprehensive health insights.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Key Features
+    st.markdown("<h3 style='text-align: center; color: #764ba2; margin: 2rem 0 1.5rem 0;'>🌟 Platform Features</h3>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("""
+        <div class="info-card" style="text-align: center; height: 280px; display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔍</div>
+            <h3 style="color: #667eea; margin-bottom: 0.8rem;">AI Report Analysis</h3>
+            <p style="color: #666; line-height: 1.5;">
+                Upload medical reports and get instant AI-powered analysis with intelligent diagnosis suggestions.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="info-card" style="text-align: center; height: 280px; display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">💬</div>
+            <h3 style="color: #667eea; margin-bottom: 0.8rem;">Interactive Consultation</h3>
+            <p style="color: #666; line-height: 1.5;">
+                Chat with our AI assistant for personalized health insights and medical information.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div class="info-card" style="text-align: center; height: 280px; display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">👨‍⚕️</div>
+            <h3 style="color: #667eea; margin-bottom: 0.8rem;">Doctor Verification</h3>
+            <p style="color: #666; line-height: 1.5;">
+                All AI diagnoses are reviewed and verified by licensed medical professionals.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # How It Works Section
+    st.markdown("<h3 style='text-align: center; color: #764ba2; margin: 3rem 0 1.5rem 0;'>🚀 How It Works</h3>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div class="info-card">
+            <h4 style="color: #667eea;">👤 For Patients</h4>
+            <ol style="color: #666; line-height: 2;">
+                <li><strong>Sign Up & Login</strong> - Create your secure account</li>
+                <li><strong>Upload Reports</strong> - Submit your medical documents (PDF/TXT)</li>
+                <li><strong>AI Analysis</strong> - Get instant intelligent diagnosis insights</li>
+                <li><strong>Ask Questions</strong> - Interactive consultation with AI assistant</li>
+                <li><strong>Track Status</strong> - Monitor doctor verification in real-time</li>
+                <li><strong>View History</strong> - Access all your past consultations</li>
+            </ol>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="info-card">
+            <h4 style="color: #f5576c;">👨‍⚕️ For Doctors</h4>
+            <ol style="color: #666; line-height: 2;">
+                <li><strong>Professional Login</strong> - Access your doctor dashboard</li>
+                <li><strong>Review Diagnoses</strong> - See pending AI-generated diagnoses</li>
+                <li><strong>Patient History</strong> - Search and view patient records</li>
+                <li><strong>Verify/Reject</strong> - Approve or reject AI diagnoses</li>
+                <li><strong>Add Notes</strong> - Provide professional medical commentary</li>
+                <li><strong>Ensure Quality</strong> - Maintain diagnostic accuracy standards</li>
+            </ol>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Technology Stack
+    st.markdown("<h3 style='text-align: center; color: #764ba2; margin: 3rem 0 1.5rem 0;'>⚡ Powered By Advanced AI</h3>", unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown("""
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🤖</div>
+            <p style="color: #666; font-weight: 600;">LangChain RAG</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📊</div>
+            <p style="color: #666; font-weight: 600;">Vector Database</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔐</div>
+            <p style="color: #666; font-weight: 600;">Secure Auth</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown("""
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">☁️</div>
+            <p style="color: #666; font-weight: 600;">Cloud API</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Important Disclaimer
+    st.markdown("<div style='margin-top: 2rem;'></div>", unsafe_allow_html=True)
+    st.warning("""
+    **⚠️ Important Medical Disclaimer**
+    
+    MedRagnosis is an AI-powered diagnostic assistance tool designed to support healthcare decision-making. 
+    It is **NOT a substitute** for professional medical advice, diagnosis, or treatment. All AI-generated 
+    diagnoses are subject to doctor verification. Always consult qualified healthcare providers for medical 
+    concerns. Never disregard professional medical advice or delay seeking it because of information from this platform.
+    """)
+    
+    # Call to Action
+    st.markdown("""
+    <div style="text-align: center; padding: 2.5rem; margin-top: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+        <h2 style="color: white; margin-bottom: 1rem;">Ready to Experience Smart Healthcare?</h2>
+        <p style="color: white; opacity: 0.95; margin-bottom: 1.5rem; font-size: 1.1rem;">
+            Join thousands of patients and doctors using AI-powered medical intelligence.
+        </p>
+        <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; display: inline-block;">
+            <p style="color: white; font-size: 1.2rem; margin: 0;">
+                👈 <strong>Use the sidebar to login or create your account</strong>
+            </p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 else:
     # ------------------ PATIENT VIEW ------------------
     if st.session_state.role == "patient":
