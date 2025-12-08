@@ -6,8 +6,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "super_secret_key_please_change_in_prod")
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise ValueError("❌ CRITICAL ERROR: SECRET_KEY is missing from environment variables. application cannot start.")
+
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

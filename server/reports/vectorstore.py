@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from pinecone import Pinecone, ServerlessSpec
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain.embeddings import init_embeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document 
 
 from ..config.db import reports_collection
@@ -55,7 +55,7 @@ def extract_text_with_ocr(pdf_path: str) -> List[Document]:
     return docs
 
 async def load_vectorstore(uploaded_files: List[UploadFile], uploaded: str, doc_id: str):
-    embed_model = init_embeddings("openai:text-embedding-3-small")
+    embed_model = OpenAIEmbeddings(model="text-embedding-3-small", api_key=OPENAI_API_KEY)
 
     for file in uploaded_files:
         filename = Path(file.filename).name
