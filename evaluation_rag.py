@@ -11,22 +11,16 @@ from ragas.metrics import (
 )
 from datasets import Dataset
 
-# Import your backend logic
 from server.diagnosis.query import chat_diagnosis_report
 from server.models.db_models import ChatMessage
-
-# Import LangChain OpenAI components for the Ragas Evaluator
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 load_dotenv()
 
-# 1. SETUP
-# ⚠️ IMPORTANT: Upload 'lipid.pdf' to your running app first!
-# Then copy the doc_id from the UI or logs and paste it below.
+
 TEST_DOC_ID = "065b6e48-bc6f-41b5-bb86-1a90697872b7" 
 TEST_USERNAME = "tester" 
 
-# 2. DEFINE YOUR TEST SET (Customized for lipid.pdf)
 test_questions = [
     "What is the total cholesterol level for Mrs. Priyani Almeda?",
     "Are there any abnormal results in the lipid profile? Which ones are high?",
@@ -35,7 +29,7 @@ test_questions = [
     "Based on the target levels provided, is the LDL cholesterol considered optimal?"
 ]
 
-# Ground truths must be STRINGS (not lists) to avoid validation errors
+
 ground_truths = [
     "The total cholesterol level is 165 mg/dL.",
     "Yes, there are abnormal results. The Triglycerides are 244 mg/dL (Reference: 10-200) and VLDL Cholesterol is 48.8 mg/dL (Reference: 10-41). Both are above the reference range.",
@@ -79,13 +73,11 @@ async def generate_responses():
     return data_samples
 
 def run_evaluation():
-    # 1. Generate Data
+
     raw_data = asyncio.run(generate_responses())
-    
-    # 2. Convert to HuggingFace Dataset
+
     dataset = Dataset.from_dict(raw_data)
-    
-    # 3. Define Metrics
+
     metrics = [
         faithfulness,
         answer_relevancy,
@@ -93,15 +85,11 @@ def run_evaluation():
         context_recall
     ]
 
-    # 4. Define the Evaluator (The Judge)
-    # Ragas uses this LLM to grade your LLaMA model's answers.
-    # We use GPT-3.5-turbo or GPT-4 as the "Gold Standard" judge.
     judge_llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
     judge_embeddings = OpenAIEmbeddings()
 
     print("\n🧠 Running Ragas Evaluation (this may take a minute)...")
-    
-    # Pass the explicit llm and embeddings to avoid 'InstructorLLM' error
+
     results = evaluate(
         dataset, 
         metrics=metrics, 
@@ -109,7 +97,6 @@ def run_evaluation():
         embeddings=judge_embeddings
     )
 
-    # 5. Display Results
     print("\n📊 ============ EVALUATION RESULTS ============")
     print(results)
     
