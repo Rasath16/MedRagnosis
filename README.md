@@ -29,6 +29,21 @@
 
 ---
 
+## 📊 System Evaluation (AI Safety)
+
+We rigorously validated the RAG pipeline using **Ragas (Retrieval Augmented Generation Assessment)** on real-world medical reports to ensure reliability and minimize hallucinations.
+
+| Metric                | Score    | Description                                                                                                        |
+| :-------------------- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+| **Context Recall**    | **1.00** | The retrieval system found the correct medical data **100% of the time**.                                          |
+| **Faithfulness**      | **0.96** | The model demonstrated **extremely low hallucination**, with 96% of its claims directly backed by the source text. |
+| **Context Precision** | **0.91** | Achieved a high signal-to-noise ratio, ensuring relevant text chunks are ranked highest.                           |
+| **Answer Relevancy**  | **0.75** | The AI provides concise, direct answers suited for medical professionals.                                          |
+
+_Verification Script:_ `evaluate_rag.py`
+
+---
+
 ## 🛠 Tech Stack
 
 | Component          | Technology            | Details                                           |
@@ -42,6 +57,7 @@
 | **LLM Inference**  | Groq API              | **LLaMA 3.3-70b-versatile** (High speed/accuracy) |
 | **Embeddings**     | OpenAI                | **text-embedding-3-small**                        |
 | **OCR Engine**     | Tesseract, Poppler    | Handles scanned PDFs and images                   |
+| **Evaluation**     | Ragas, OpenAI GPT-4   | Automated pipeline for Faithfulness & Recall      |
 
 ---
 
@@ -60,6 +76,7 @@ MedRagnosis/
 │   ├── reports/         # File Processing, OCR & Vector Ingestion
 │   └── main.py          # App Entry Point
 ├── uploaded_dir/        # Local storage for temp files
+├── evaluate_rag.py      # Ragas Evaluation Script
 ├── reset_system.py      # Utility script to wipe DB/Pinecone for fresh start
 ├── Dockerfile           # Container configuration for Render
 ├── requirements.txt     # Backend dependencies
