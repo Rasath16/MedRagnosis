@@ -119,7 +119,7 @@ async def chat_diagnosis_report(user: str, doc_id: str, messages: list):
         }
     )
 
-    return {"diagnosis": final.content, "sources": list(sources_set)}
+    return {"diagnosis": final.content, "sources": list(sources_set), "contexts": contexts}
 
 async def longitudinal_analysis(username: str, question: str):
     """

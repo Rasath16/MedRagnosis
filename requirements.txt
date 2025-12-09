@@ -20,3 +20,6 @@ pytesseract
 pillow
 langchain-text-splitters
 python-jose[cryptography]
+ragas
+datasets
+pandas
