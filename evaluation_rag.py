@@ -11,34 +11,40 @@ from ragas.metrics import (
 )
 from datasets import Dataset
 
-# Import your existing backend logic
-# Ensure you are running this from the root folder
+
 from server.diagnosis.query import chat_diagnosis_report
 from server.models.db_models import ChatMessage
 
 load_dotenv()
 
-# 1. SETUP: You need a valid Doc ID from a file you uploaded
-# Upload a PDF via the UI, check the logs or UI for the doc_id, and paste it here.
 TEST_DOC_ID = "PASTE_YOUR_DOC_ID_HERE" 
 TEST_USERNAME = "tester" 
 
-# 2. DEFINE YOUR TEST SET
-# Questions relevant to the specific medical report you uploaded
+
 test_questions = [
-    "What is the patient's cholesterol level?",
-    "Are there any abnormalities in the blood count?",
-    "What date was this report generated?",
-    "Does the patient show signs of anemia?"
+
+    "What is the total cholesterol level for Mrs. Priyani Almeda?",
+    
+    "Are there any abnormal results in the lipid profile? Which ones are high?",
+    
+    "When was this sample collected and who referred the patient?",
+    
+    "What is the HDL to LDL ratio listed in the report?",
+    
+    "Based on the target levels provided, is the LDL cholesterol considered optimal?"
 ]
 
-# (Optional) Ground truths improve accuracy metrics like Context Recall
-# If you don't have them, Ragas will calculate what it can without them.
 ground_truths = [
-    ["The total cholesterol is 185 mg/dL."],
-    ["Yes, the white blood cell count is slightly elevated."],
-    ["The report is dated October 12, 2023."],
-    ["No, hemoglobin levels are within normal range."]
+    # A1
+    ["The total cholesterol level is 165 mg/dL."],
+    
+    ["Yes, there are abnormal results. The Triglycerides are 244 mg/dL (Reference: 10-200) and VLDL Cholesterol is 48.8 mg/dL (Reference: 10-41). Both are above the reference range."],
+
+    ["The sample was collected on 05 Dec, 2025. The patient was referred by Kalubowila Hospital."],
+    
+    ["The HDL/LDL ratio is 0.6."],
+    
+    ["Yes, the LDL cholesterol is 71.2 mg/dL. According to the target levels, LDL < 100 mg/dL is considered Optimal."]
 ]
 
 async def generate_responses():
@@ -88,8 +94,8 @@ def run_evaluation():
     metrics = [
         faithfulness,      # Is the answer derived from the context? (Hallucination check)
         answer_relevancy,  # Does the answer actually address the user's question?
-        # context_precision, # (Requires ground_truth)
-        # context_recall     # (Requires ground_truth)
+        context_precision, # (Requires ground_truth)
+        context_recall     # (Requires ground_truth)
     ]
 
     print("\n🧠 Running Ragas Evaluation (this may take a minute)...")
