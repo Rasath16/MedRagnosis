@@ -607,7 +607,7 @@ else:
                     if "messages" not in st.session_state:
                         st.session_state.messages = []
 
-                    chat_container = st.container(height=100)
+                    chat_container = st.container(height=300)
                     with chat_container:
                         if not st.session_state.messages:
                             st.info(f"🤖 AI ready to analyze your {mode.lower()}. Ask me anything about your health!")
