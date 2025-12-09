@@ -20,7 +20,7 @@ from server.diagnosis.query import chat_diagnosis_report
 from dotenv import load_dotenv
 load_dotenv()
 
-.
+
 evaluator_llm = LangchainLLMWrapper(ChatOpenAI(model="gpt-4-turbo"))
 evaluator_embeddings = OpenAIEmbeddings()
 
