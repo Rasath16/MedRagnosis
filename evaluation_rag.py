@@ -11,40 +11,37 @@ from ragas.metrics import (
 )
 from datasets import Dataset
 
-
+# Import your backend logic
 from server.diagnosis.query import chat_diagnosis_report
 from server.models.db_models import ChatMessage
 
+# Import LangChain OpenAI components for the Ragas Evaluator
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+
 load_dotenv()
 
-TEST_DOC_ID = "PASTE_YOUR_DOC_ID_HERE" 
+# 1. SETUP
+# ⚠️ IMPORTANT: Upload 'lipid.pdf' to your running app first!
+# Then copy the doc_id from the UI or logs and paste it below.
+TEST_DOC_ID = "065b6e48-bc6f-41b5-bb86-1a90697872b7" 
 TEST_USERNAME = "tester" 
 
-
+# 2. DEFINE YOUR TEST SET (Customized for lipid.pdf)
 test_questions = [
-
     "What is the total cholesterol level for Mrs. Priyani Almeda?",
-    
     "Are there any abnormal results in the lipid profile? Which ones are high?",
-    
     "When was this sample collected and who referred the patient?",
-    
     "What is the HDL to LDL ratio listed in the report?",
-    
     "Based on the target levels provided, is the LDL cholesterol considered optimal?"
 ]
 
+# Ground truths must be STRINGS (not lists) to avoid validation errors
 ground_truths = [
-    # A1
-    ["The total cholesterol level is 165 mg/dL."],
-    
-    ["Yes, there are abnormal results. The Triglycerides are 244 mg/dL (Reference: 10-200) and VLDL Cholesterol is 48.8 mg/dL (Reference: 10-41). Both are above the reference range."],
-
-    ["The sample was collected on 05 Dec, 2025. The patient was referred by Kalubowila Hospital."],
-    
-    ["The HDL/LDL ratio is 0.6."],
-    
-    ["Yes, the LDL cholesterol is 71.2 mg/dL. According to the target levels, LDL < 100 mg/dL is considered Optimal."]
+    "The total cholesterol level is 165 mg/dL.",
+    "Yes, there are abnormal results. The Triglycerides are 244 mg/dL (Reference: 10-200) and VLDL Cholesterol is 48.8 mg/dL (Reference: 10-41). Both are above the reference range.",
+    "The sample was collected on 05 Dec, 2025. The patient was referred by Kalubowila Hospital.",
+    "The HDL/LDL ratio is 0.6.",
+    "Yes, the LDL cholesterol is 71.2 mg/dL. According to the target levels, LDL < 100 mg/dL is considered Optimal."
 ]
 
 async def generate_responses():
@@ -53,7 +50,7 @@ async def generate_responses():
         'question': [],
         'answer': [],
         'contexts': [],
-        'ground_truth': ground_truths # Remove this line if you didn't define ground_truths
+        'ground_truth': ground_truths 
     }
 
     print(f"🚀 Starting evaluation on {len(test_questions)} questions...")
@@ -70,14 +67,14 @@ async def generate_responses():
             
             data_samples['question'].append(question)
             data_samples['answer'].append(response["diagnosis"])
-            data_samples['contexts'].append(response["contexts"]) # The list of strings we added in Step 1
+            data_samples['contexts'].append(response["contexts"])
             
         except Exception as e:
             print(f"❌ Error on question '{question}': {e}")
-            # Fill with empty data to keep lists aligned
+            # If backend fails (502 error), fill with placeholder to prevent crash
             data_samples['question'].append(question)
-            data_samples['answer'].append("Error")
-            data_samples['contexts'].append([""])
+            data_samples['answer'].append("I could not retrieve the information due to a server error.")
+            data_samples['contexts'].append(["No context retrieved"])
 
     return data_samples
 
@@ -85,32 +82,46 @@ def run_evaluation():
     # 1. Generate Data
     raw_data = asyncio.run(generate_responses())
     
-    # 2. Convert to HuggingFace Dataset (Required by Ragas)
+    # 2. Convert to HuggingFace Dataset
     dataset = Dataset.from_dict(raw_data)
     
-    # 3. Select Metrics
-    # Note: Using OpenAI GPT-3.5/4 for evaluation is standard best practice,
-    # even if your RAG uses LLaMA. Ensure OPENAI_API_KEY is in .env
+    # 3. Define Metrics
     metrics = [
-        faithfulness,      # Is the answer derived from the context? (Hallucination check)
-        answer_relevancy,  # Does the answer actually address the user's question?
-        context_precision, # (Requires ground_truth)
-        context_recall     # (Requires ground_truth)
+        faithfulness,
+        answer_relevancy,
+        context_precision,
+        context_recall
     ]
 
-    print("\n🧠 Running Ragas Evaluation (this may take a minute)...")
-    results = evaluate(dataset, metrics=metrics)
+    # 4. Define the Evaluator (The Judge)
+    # Ragas uses this LLM to grade your LLaMA model's answers.
+    # We use GPT-3.5-turbo or GPT-4 as the "Gold Standard" judge.
+    judge_llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    judge_embeddings = OpenAIEmbeddings()
 
-    # 4. Display Results
+    print("\n🧠 Running Ragas Evaluation (this may take a minute)...")
+    
+    # Pass the explicit llm and embeddings to avoid 'InstructorLLM' error
+    results = evaluate(
+        dataset, 
+        metrics=metrics, 
+        llm=judge_llm, 
+        embeddings=judge_embeddings
+    )
+
+    # 5. Display Results
     print("\n📊 ============ EVALUATION RESULTS ============")
     print(results)
     
-    # Convert to Pandas for easier reading
     df = results.to_pandas()
-    print("\n📝 Detailed Breakdown:")
-    print(df[['question', 'faithfulness', 'answer_relevancy']])
     
-    # Save to CSV for your portfolio
+    # Check if columns exist before printing to avoid KeyError
+    cols_to_print = ['question', 'faithfulness', 'answer_relevancy', 'context_precision','context_recall']
+    existing_cols = [c for c in cols_to_print if c in df.columns]
+    
+    print("\n📝 Detailed Breakdown:")
+    print(df[existing_cols])
+    
     df.to_csv("rag_evaluation_results.csv", index=False)
     print("\n✅ Results saved to 'rag_evaluation_results.csv'")
 
