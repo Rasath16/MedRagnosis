@@ -76,11 +76,11 @@ async def load_vectorstore(uploaded_files: List[UploadFile], uploaded: str, doc_
         total_text_length = sum(len(doc.page_content.strip()) for doc in documents)
         
         if total_text_length < 50:
-            print(f"Detected scanned PDF for {filename}. Switching to OCR...")
+            print(f"Detected scanned PDF for the {filename}. Switching to OCR...")
             try:
                 documents = await asyncio.to_thread(extract_text_with_ocr, str(save_path))
             except Exception as e:
-                print(f"OCR failed for {filename}: {e}")
+                print(f"OCR failed for the {filename}: {e}")
                 continue
 
         if not documents:

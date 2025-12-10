@@ -4,6 +4,7 @@ import json
 import datetime
 import os
 from dotenv import load_dotenv
+from requests.exceptions import JSONDecodeError, RequestException
 
 load_dotenv()
 
@@ -357,9 +358,13 @@ def authenticate_user(username, password):
             f"{API_URL}/auth/login",
             json={"username": username, "password": password, "role": "patient"}
         )
-        return response.status_code, response.json()
-    except requests.exceptions.ConnectionError:
-        return 503, {"detail": "Server is unavailable."}
+        try:
+            return response.status_code, response.json()
+        except JSONDecodeError:
+            return response.status_code, {"detail": f"Server Error: {response.text}"}
+            
+    except RequestException as e:
+        return 503, {"detail": f"Connection failed: {str(e)}"}
 
 def upload_report(token, files):
     try:
