@@ -229,6 +229,10 @@ We plan to expand MedRagnosis with the following features:
 4.  **🗣️ Voice Interface:** Add speech-to-text (Whisper) for patients to ask questions verbally, making the app more accessible to the elderly.
 5.  **🔒 HIPAA Compliance Auditing:** Implement strict audit logs and data masking to ensure full compliance with healthcare privacy standards.
 6.  **🖼️ Medical Image Analysis:** Expand beyond text reports to analyze raw medical images (X-rays, MRIs) for preliminary anomaly detection.
+7.  **📍 Interactive Citation Highlighting:** Implement deep-linking to specific PDF coordinates.
+    - _Plan:_ Migrate from `PyPDFLoader` to `PyMuPDF` to extract bounding box coordinates (x, y, w, h) for every text token.
+    - _Storage:_ Index these coordinates in Pinecone metadata alongside vector embeddings.
+    - _UI:_ Use the Streamlit Canvas API to overlay a transparent highlight mask on the original PDF when a user clicks a citation.
 
 ---
 
