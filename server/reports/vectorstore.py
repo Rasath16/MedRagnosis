@@ -42,11 +42,12 @@ index = pc.Index(PINECONE_INDEX_NAME)
 
 def extract_text_with_ocr(pdf_path: str) -> List[Document]:
     """Fallback function to extract text from scanned PDFs using OCR."""
-    images = convert_from_path(pdf_path)
+    images = convert_from_path(pdf_path, dpi=150, grayscale=True) 
     docs = []
+    custom_config = r'--oem 1 --psm 6'
     
     for i, image in enumerate(images):
-        page_content = pytesseract.image_to_string(image)
+        page_content = pytesseract.image_to_string(image, config=custom_config)
         if page_content.strip():
             docs.append(Document(
                 page_content=page_content,
