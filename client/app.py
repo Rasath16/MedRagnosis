@@ -680,7 +680,7 @@ else:
                             icon = "⏳"
                             status_text = "PENDING REVIEW"
 
-                        timestamp = datetime.datetime.fromtimestamp(rec['timestamp']).strftime('%B %d, %Y at %I:%M %p')
+                        timestamp = datetime.datetime.fromtimestamp(rec['timestamp']).strftime('%B %d, %Y at %I:%M %p (GMT)')
                         question_preview = rec.get('question', '')[:60] + "..." if len(rec.get('question', '')) > 60 else rec.get('question', '')
                         
                         with st.expander(f"{icon} {timestamp} - {question_preview}"):
@@ -723,7 +723,7 @@ else:
                         for rec in data:
                             status = rec.get("verification_status", "pending")
                             icon = "✅" if status == "verified" else "❌" if status == "rejected" else "⏳"
-                            timestamp = datetime.datetime.fromtimestamp(rec.get('timestamp', 0)).strftime('%B %d, %Y')
+                            timestamp = datetime.datetime.fromtimestamp(rec.get('timestamp', 0)).strftime('%B %d, %Y at %I:%M %p (GMT)')
                             
                             with st.expander(f"{icon} {timestamp} - {rec.get('question', 'No Question')[:50]}..."):
                                 st.markdown(f"**❓ Patient Question:** {rec.get('question')}")
@@ -776,7 +776,7 @@ else:
                     st.info(f"📋 You have **{len(pending)}** diagnosis awaiting review")
                     
                     for idx, rec in enumerate(pending):
-                        timestamp = datetime.datetime.fromtimestamp(rec.get('timestamp', 0)).strftime('%B %d, %Y at %I:%M %p')
+                        timestamp = datetime.datetime.fromtimestamp(rec.get('timestamp', 0)).strftime('%B %d, %Y at %I:%M %p (GMT)')
                         
                         with st.expander(f"⏳ Patient: **{rec.get('requester')}** | {timestamp}", expanded=(idx==0)):
                             st.markdown("#### 📋 Patient Query")
