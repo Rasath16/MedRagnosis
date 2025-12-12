@@ -6,6 +6,10 @@
 >
 > **Status:** ✅ Backend (Deployed on Render via Docker) | ✅ Frontend (Deployed on Streamlit)
 
+## Click on thumbnail to watch the demo 👇
+
+[![Watch the video](https://img.youtube.com/vi/Gm8ajTn9toU/maxresdefault.jpg)](https://www.youtube.com/watch?v=Gm8ajTn9toU)
+
 ---
 
 ## 🚀 Key Features
