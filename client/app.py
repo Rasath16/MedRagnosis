@@ -550,8 +550,8 @@ if not st.session_state.logged_in:
         st.markdown("""
             <div class="modern-card">
                 <div class="feature-icon">⚡</div>
-                <h3>Instant Insights</h3>
-                <p>Get immediate analysis and actionable insights from your medical documents.</p>
+                <h3>Doctor Validation</h3>
+                <p>Get instant validation and actionable insights from a specialist on your AI-generated medical answers.</p>
             </div>
         """, unsafe_allow_html=True)
     
@@ -612,7 +612,7 @@ else:
                     if "messages" not in st.session_state:
                         st.session_state.messages = []
 
-                    chat_container = st.container(height=300)
+                    chat_container = st.container(height=400)
                     with chat_container:
                         if not st.session_state.messages:
                             st.info(f"🤖 AI ready to analyze your {mode.lower()}. Ask me anything about your health!")
