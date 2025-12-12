@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
-from .models import SignupRequest
+from .models import SignupRequest, LoginRequest 
 from .hash_utils import hash_password, verify_password
 from .jwt_handler import create_access_token, verify_token
 from ..config.db import users_collection
@@ -46,11 +46,10 @@ def signup(req: SignupRequest):
     })
     return {"message": "User created successfully"}
 
-class LoginRequest(SignupRequest):
-    pass
+
 
 @router.post("/login")
-def login(req: LoginRequest):
+def login(req: LoginRequest): 
     """
     Verifies credentials and returns a JWT access token.
     """
